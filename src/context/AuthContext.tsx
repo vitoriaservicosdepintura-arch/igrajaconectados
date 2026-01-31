@@ -22,6 +22,7 @@ interface RegisterData {
   phone: string;
   password: string;
   endereco?: string;
+  plano?: string;
 }
 
 interface StoredUser extends Usuario {
@@ -184,14 +185,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const igrejaId = 'igreja_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     const userId = 'user_' + Date.now();
 
-    // Criar nova igreja
+    // Criar nova igreja com plano selecionado
+    const planoMap: Record<string, string> = {
+      'basico': '1',
+      'premium': '2',
+      'ouro': '3'
+    };
+    
     const newIgreja: Igreja = {
       id: igrejaId,
       nome: data.churchName,
       email: data.email,
       telefone: data.phone,
       cores: { primary: '#6366f1', secondary: '#8b5cf6' },
-      plano_id: '1',
+      plano_id: planoMap[data.plano || 'basico'] || '1',
       status: 'ativo',
       idioma_padrao: 'pt',
       data_cadastro: new Date(),
