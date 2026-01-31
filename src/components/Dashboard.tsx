@@ -3884,9 +3884,60 @@ function SundaySchoolSection({ quizzes: initialQuizzes }: { quizzes: QuizEscolin
   );
 }
 
-// Gallery Section
+// Gallery Section with Upload functionality
 function GallerySection() {
-  const images = [
+  const { fotos, videos, addFoto, addVideo } = useChurchData();
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadType, setUploadType] = useState<'foto' | 'video'>('foto');
+  const [formData, setFormData] = useState({
+    titulo: '',
+    descricao: '',
+    url: '',
+    data: new Date().toISOString().split('T')[0],
+    evento: ''
+  });
+
+  const handleUpload = () => {
+    if (!formData.titulo || !formData.url) return;
+
+    if (uploadType === 'foto') {
+      addFoto({
+        igreja_id: '1',
+        titulo: formData.titulo,
+        url: formData.url,
+        descricao: formData.descricao,
+        data: formData.data
+      });
+    } else {
+      addVideo({
+        igreja_id: '1',
+        titulo: formData.titulo,
+        url: formData.url,
+        thumbnail: formData.url.includes('youtube') 
+          ? `https://img.youtube.com/vi/${formData.url.split('v=')[1]?.split('&')[0] || ''}/hqdefault.jpg`
+          : 'https://images.unsplash.com/photo-1478147427282-58a87a120781?w=400&h=300&fit=crop',
+        descricao: formData.descricao,
+        data: formData.data
+      });
+    }
+
+    setFormData({ titulo: '', descricao: '', url: '', data: new Date().toISOString().split('T')[0], evento: '' });
+    setShowUploadModal(false);
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, url: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Sample images for quick selection
+  const sampleImages = [
     'https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=400&h=300&fit=crop',
     'https://images.unsplash.com/photo-1507692049790-de58290a4334?w=400&h=300&fit=crop',
     'https://images.unsplash.com/photo-1519491050282-cf00c82424fd?w=400&h=300&fit=crop',
@@ -3897,28 +3948,354 @@ function GallerySection() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-white">Galeria de Fotos e Vídeos</h2>
-        <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 className="text-xl font-semibold text-white">Galeria de Fotos e Vídeos</h2>
+          <p className="text-gray-400 text-sm mt-1">{fotos.length} fotos • {videos.length} vídeos</p>
+        </div>
+        <button 
+          onClick={() => setShowUploadModal(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl hover:from-indigo-400 hover:to-purple-500 transition-all shadow-lg shadow-indigo-500/30"
+        >
           <Plus className="w-5 h-5" />
-          <span>Upload</span>
+          <span>+ Upload</span>
         </button>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        {images.map((img, index) => (
-          <motion.div
-            key={index}
-            whileHover={{ scale: 1.05 }}
-            className="relative group aspect-video rounded-xl overflow-hidden cursor-pointer"
-          >
-            <img src={img} alt={`Gallery ${index}`} className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-              <Play className="w-12 h-12 text-white" />
-            </div>
-          </motion.div>
-        ))}
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 rounded-xl p-4">
+          <p className="text-indigo-400 text-sm">Total de Fotos</p>
+          <p className="text-2xl font-bold text-white">{fotos.length}</p>
+        </div>
+        <div className="bg-gradient-to-br from-pink-500/20 to-rose-500/20 border border-pink-500/30 rounded-xl p-4">
+          <p className="text-pink-400 text-sm">Total de Vídeos</p>
+          <p className="text-2xl font-bold text-white">{videos.length}</p>
+        </div>
+        <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-xl p-4">
+          <p className="text-green-400 text-sm">Este Mês</p>
+          <p className="text-2xl font-bold text-white">{fotos.filter(f => new Date(f.data).getMonth() === new Date().getMonth()).length}</p>
+        </div>
+        <div className="bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-xl p-4">
+          <p className="text-amber-400 text-sm">Última Atualização</p>
+          <p className="text-lg font-bold text-white">
+            {fotos.length > 0 ? new Date(fotos[fotos.length - 1].data).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : 'N/A'}
+          </p>
+        </div>
       </div>
+
+      {/* Photos Section */}
+      <div>
+        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+          📷 Fotos
+          <span className="bg-indigo-500/20 text-indigo-400 text-xs px-2 py-1 rounded-full">{fotos.length}</span>
+        </h3>
+        {fotos.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {fotos.map((foto, index) => (
+              <motion.div
+                key={foto.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: index * 0.05 }}
+                whileHover={{ scale: 1.03 }}
+                className="relative group aspect-video rounded-xl overflow-hidden cursor-pointer bg-slate-700"
+              >
+                <img src={foto.url} alt={foto.titulo} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute bottom-2 left-2 right-2">
+                    <p className="text-white font-medium text-sm truncate">{foto.titulo}</p>
+                    <p className="text-gray-300 text-xs">{new Date(foto.data).toLocaleDateString('pt-BR')}</p>
+                  </div>
+                </div>
+                {foto.descricao && (
+                  <span className="absolute top-2 left-2 px-2 py-0.5 bg-indigo-500/80 text-white text-xs rounded-full">
+                    {foto.descricao}
+                  </span>
+                )}
+              </motion.div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 bg-white/5 rounded-2xl border border-white/10">
+            <Image className="w-16 h-16 text-gray-500 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-white mb-2">Nenhuma foto cadastrada</h3>
+            <p className="text-gray-400 mb-4">Adicione fotos da sua igreja e eventos</p>
+            <button
+              onClick={() => { setUploadType('foto'); setShowUploadModal(true); }}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl"
+            >
+              <Plus className="w-5 h-5" />
+              <span>Adicionar Foto</span>
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Videos Section */}
+      <div>
+        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+          🎬 Vídeos
+          <span className="bg-pink-500/20 text-pink-400 text-xs px-2 py-1 rounded-full">{videos.length}</span>
+        </h3>
+        {videos.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {videos.map((video, index) => (
+              <motion.div
+                key={video.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ scale: 1.02 }}
+                className="relative group rounded-xl overflow-hidden cursor-pointer bg-slate-700"
+              >
+                <div className="aspect-video relative">
+                  <img src={video.thumbnail} alt={video.titulo} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/50 transition-colors">
+                    <motion.div
+                      whileHover={{ scale: 1.2 }}
+                      className="w-14 h-14 bg-red-600 rounded-full flex items-center justify-center shadow-lg"
+                    >
+                      <Play className="w-6 h-6 text-white ml-1" />
+                    </motion.div>
+                  </div>
+                </div>
+                <div className="p-3 bg-slate-800">
+                  <p className="text-white font-medium truncate">{video.titulo}</p>
+                  <p className="text-gray-400 text-sm">{new Date(video.data).toLocaleDateString('pt-BR')}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 bg-white/5 rounded-2xl border border-white/10">
+            <Play className="w-16 h-16 text-gray-500 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-white mb-2">Nenhum vídeo cadastrado</h3>
+            <p className="text-gray-400 mb-4">Adicione vídeos de cultos e eventos</p>
+            <button
+              onClick={() => { setUploadType('video'); setShowUploadModal(true); }}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-500 to-rose-600 text-white rounded-xl"
+            >
+              <Plus className="w-5 h-5" />
+              <span>Adicionar Vídeo</span>
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Upload Modal */}
+      <AnimatePresence>
+        {showUploadModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setShowUploadModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-slate-800 border border-white/10 rounded-2xl w-full max-w-lg overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div className={`p-4 ${uploadType === 'foto' ? 'bg-gradient-to-r from-indigo-500 to-purple-600' : 'bg-gradient-to-r from-pink-500 to-rose-600'}`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                      {uploadType === 'foto' ? <Image className="w-5 h-5 text-white" /> : <Play className="w-5 h-5 text-white" />}
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-white">
+                        {uploadType === 'foto' ? 'Adicionar Foto' : 'Adicionar Vídeo'}
+                      </h3>
+                      <p className="text-white/70 text-xs">Preencha os detalhes</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setShowUploadModal(false)} 
+                    className="text-white/70 hover:text-white p-2 hover:bg-white/10 rounded-full transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Type Selector */}
+              <div className="p-4 border-b border-white/10">
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setUploadType('foto')}
+                    className={`flex-1 py-2 rounded-xl font-medium transition-all ${
+                      uploadType === 'foto'
+                        ? 'bg-indigo-500 text-white'
+                        : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                    }`}
+                  >
+                    📷 Foto
+                  </button>
+                  <button
+                    onClick={() => setUploadType('video')}
+                    className={`flex-1 py-2 rounded-xl font-medium transition-all ${
+                      uploadType === 'video'
+                        ? 'bg-pink-500 text-white'
+                        : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                    }`}
+                  >
+                    🎬 Vídeo
+                  </button>
+                </div>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-4 space-y-4 max-h-[60vh] overflow-y-auto">
+                {/* Title */}
+                <div>
+                  <label className="block text-gray-400 text-sm mb-2">Título *</label>
+                  <input
+                    type="text"
+                    value={formData.titulo}
+                    onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
+                    placeholder={uploadType === 'foto' ? 'Ex: Culto de Domingo' : 'Ex: Pregação do Pastor'}
+                    className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="block text-gray-400 text-sm mb-2">Descrição</label>
+                  <textarea
+                    value={formData.descricao}
+                    onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+                    placeholder="Descrição opcional..."
+                    rows={2}
+                    className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 resize-none"
+                  />
+                </div>
+
+                {/* Date and Event */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-gray-400 text-sm mb-2">📅 Data</label>
+                    <input
+                      type="date"
+                      value={formData.data}
+                      onChange={(e) => setFormData({ ...formData, data: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-400 text-sm mb-2">🎉 Evento</label>
+                    <input
+                      type="text"
+                      value={formData.evento}
+                      onChange={(e) => setFormData({ ...formData, evento: e.target.value })}
+                      placeholder="Ex: Culto, Batismo..."
+                      className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+                </div>
+
+                {/* URL or File Upload */}
+                <div>
+                  <label className="block text-gray-400 text-sm mb-2">
+                    {uploadType === 'foto' ? '🖼️ Imagem' : '🔗 URL do Vídeo (YouTube)'} *
+                  </label>
+                  
+                  {uploadType === 'foto' ? (
+                    <>
+                      {/* File Upload */}
+                      <label className="flex items-center justify-center gap-3 p-4 bg-white/5 border-2 border-dashed border-white/20 rounded-xl cursor-pointer hover:border-indigo-500 transition-all mb-3">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileUpload}
+                          className="hidden"
+                        />
+                        <Image className="w-6 h-6 text-gray-400" />
+                        <span className="text-gray-400">Clique para fazer upload</span>
+                      </label>
+
+                      {/* URL Input */}
+                      <input
+                        type="url"
+                        value={formData.url}
+                        onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                        placeholder="Ou cole a URL da imagem"
+                        className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+                      />
+
+                      {/* Sample Images */}
+                      <div className="mt-3">
+                        <p className="text-gray-500 text-xs mb-2">Ou selecione uma imagem:</p>
+                        <div className="grid grid-cols-6 gap-2">
+                          {sampleImages.map((img, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => setFormData({ ...formData, url: img })}
+                              className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                                formData.url === img ? 'border-indigo-500' : 'border-transparent hover:border-white/30'
+                              }`}
+                            >
+                              <img src={img} alt={`Sample ${idx}`} className="w-full h-full object-cover" />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <input
+                      type="url"
+                      value={formData.url}
+                      onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                      placeholder="https://www.youtube.com/watch?v=..."
+                      className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+                    />
+                  )}
+
+                  {/* Preview */}
+                  {formData.url && uploadType === 'foto' && (
+                    <div className="mt-3 relative rounded-xl overflow-hidden">
+                      <img src={formData.url} alt="Preview" className="w-full h-40 object-cover" />
+                      <button
+                        onClick={() => setFormData({ ...formData, url: '' })}
+                        className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="p-4 bg-white/5 border-t border-white/10 flex gap-3">
+                <button
+                  onClick={() => setShowUploadModal(false)}
+                  className="flex-1 py-2.5 bg-white/5 text-gray-400 rounded-xl hover:bg-white/10 transition-all"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleUpload}
+                  disabled={!formData.titulo || !formData.url}
+                  className={`flex-1 py-2.5 text-white rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
+                    uploadType === 'foto'
+                      ? 'bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500'
+                      : 'bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-400 hover:to-rose-500'
+                  }`}
+                >
+                  <Save className="w-5 h-5" />
+                  <span>Salvar</span>
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -3975,39 +4352,129 @@ function NotificationsSection() {
   );
 }
 
-// Settings Section
+// Settings Section with Logo Upload and Color Selection
 function SettingsSection({ igreja }: { igreja: any }) {
+  const [formData, setFormData] = useState({
+    nome: igreja?.nome || '',
+    email: igreja?.email || '',
+    telefone: igreja?.telefone || '',
+    endereco: igreja?.endereco || '',
+    logo: igreja?.logo || '',
+    corPrincipal: igreja?.cor_principal || '#6366f1'
+  });
+  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, logo: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSave = () => {
+    setSaving(true);
+    
+    // Save to localStorage
+    const igrejas = JSON.parse(localStorage.getItem('churchApp_igrejas') || '[]');
+    const updatedIgrejas = igrejas.map((i: any) => 
+      i.id === igreja?.id 
+        ? { ...i, ...formData, cor_principal: formData.corPrincipal }
+        : i
+    );
+    localStorage.setItem('churchApp_igrejas', JSON.stringify(updatedIgrejas));
+    
+    // Update session
+    const session = JSON.parse(localStorage.getItem('churchApp_session') || '{}');
+    if (session.igreja) {
+      session.igreja = { ...session.igreja, ...formData, cor_principal: formData.corPrincipal };
+      localStorage.setItem('churchApp_session', JSON.stringify(session));
+    }
+    
+    setTimeout(() => {
+      setSaving(false);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    }, 1000);
+  };
+
+  const colorOptions = [
+    { color: '#6366f1', name: 'Índigo' },
+    { color: '#8b5cf6', name: 'Violeta' },
+    { color: '#ec4899', name: 'Rosa' },
+    { color: '#10b981', name: 'Verde' },
+    { color: '#f59e0b', name: 'Âmbar' },
+    { color: '#ef4444', name: 'Vermelho' },
+    { color: '#3b82f6', name: 'Azul' },
+    { color: '#14b8a6', name: 'Teal' },
+  ];
+
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-white">Configurações da Igreja</h2>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 className="text-xl font-semibold text-white">Configurações da Igreja</h2>
+          <p className="text-gray-400 text-sm mt-1">Personalize a identidade visual da sua igreja</p>
+        </div>
+        {saved && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex items-center gap-2 px-4 py-2 bg-green-500/20 border border-green-500/30 rounded-xl text-green-400"
+          >
+            <CheckCircle className="w-5 h-5" />
+            <span>Alterações salvas!</span>
+          </motion.div>
+        )}
+      </div>
 
       <div className="grid md:grid-cols-2 gap-6">
         {/* Church Info */}
         <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-          <h3 className="text-lg font-semibold text-white mb-4">Informações da Igreja</h3>
+          <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            ⛪ Informações da Igreja
+          </h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-gray-400 text-sm mb-1">Nome da Igreja</label>
+              <label className="block text-gray-400 text-sm mb-2">Nome da Igreja *</label>
               <input
                 type="text"
-                defaultValue={igreja?.nome}
-                className="w-full p-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                value={formData.nome}
+                onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                className="w-full p-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-indigo-500 transition-colors"
               />
             </div>
             <div>
-              <label className="block text-gray-400 text-sm mb-1">E-mail</label>
+              <label className="block text-gray-400 text-sm mb-2">E-mail</label>
               <input
                 type="email"
-                defaultValue={igreja?.email}
-                className="w-full p-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="w-full p-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-indigo-500 transition-colors"
               />
             </div>
             <div>
-              <label className="block text-gray-400 text-sm mb-1">Telefone</label>
+              <label className="block text-gray-400 text-sm mb-2">Telefone / WhatsApp</label>
               <input
                 type="tel"
-                defaultValue={igreja?.telefone}
-                className="w-full p-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                value={formData.telefone}
+                onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
+                placeholder="+351 912 345 678"
+                className="w-full p-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-colors"
+              />
+            </div>
+            <div>
+              <label className="block text-gray-400 text-sm mb-2">Endereço</label>
+              <textarea
+                value={formData.endereco}
+                onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
+                placeholder="Rua, Número, Cidade, País"
+                rows={2}
+                className="w-full p-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-colors resize-none"
               />
             </div>
           </div>
@@ -4015,33 +4482,196 @@ function SettingsSection({ igreja }: { igreja: any }) {
 
         {/* Branding */}
         <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-          <h3 className="text-lg font-semibold text-white mb-4">Identidade Visual</h3>
-          <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            🎨 Identidade Visual
+          </h3>
+          <div className="space-y-6">
+            {/* Logo Upload */}
             <div>
-              <label className="block text-gray-400 text-sm mb-1">Logo</label>
-              <div className="w-24 h-24 bg-white/10 rounded-xl flex items-center justify-center border-2 border-dashed border-white/20 cursor-pointer hover:border-indigo-500 transition-colors">
-                <Plus className="w-8 h-8 text-gray-400" />
+              <label className="block text-gray-400 text-sm mb-2">Logo da Igreja</label>
+              <div className="flex items-center gap-4">
+                {formData.logo ? (
+                  <div className="relative">
+                    <img 
+                      src={formData.logo} 
+                      alt="Logo" 
+                      className="w-24 h-24 rounded-xl object-cover border-2 border-white/20"
+                    />
+                    <button
+                      onClick={() => setFormData({ ...formData, logo: '' })}
+                      className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="w-24 h-24 bg-white/10 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-white/20 cursor-pointer hover:border-indigo-500 transition-colors">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                      className="hidden"
+                    />
+                    <Image className="w-8 h-8 text-gray-400 mb-1" />
+                    <span className="text-gray-500 text-xs">Upload</span>
+                  </label>
+                )}
+                <div className="flex-1">
+                  <p className="text-gray-300 text-sm">Faça upload do logo da sua igreja</p>
+                  <p className="text-gray-500 text-xs mt-1">Recomendado: 200x200px, PNG ou JPG</p>
+                </div>
               </div>
             </div>
+
+            {/* Color Selection */}
             <div>
-              <label className="block text-gray-400 text-sm mb-1">Cor Principal</label>
-              <div className="flex gap-2">
-                {['#6366f1', '#8b5cf6', '#ec4899', '#10b981', '#f59e0b'].map((color) => (
-                  <button
+              <label className="block text-gray-400 text-sm mb-2">Cor Principal</label>
+              <div className="grid grid-cols-4 gap-3">
+                {colorOptions.map(({ color, name }) => (
+                  <motion.button
                     key={color}
-                    className="w-10 h-10 rounded-xl border-2 border-white/20 hover:border-white transition-colors"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setFormData({ ...formData, corPrincipal: color })}
+                    className={`relative w-full aspect-square rounded-xl transition-all ${
+                      formData.corPrincipal === color 
+                        ? 'ring-2 ring-white ring-offset-2 ring-offset-slate-800' 
+                        : 'hover:ring-2 hover:ring-white/50'
+                    }`}
                     style={{ backgroundColor: color }}
-                  />
+                  >
+                    {formData.corPrincipal === color && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="absolute inset-0 flex items-center justify-center"
+                      >
+                        <CheckCircle className="w-6 h-6 text-white drop-shadow-lg" />
+                      </motion.div>
+                    )}
+                    <span className="sr-only">{name}</span>
+                  </motion.button>
                 ))}
+              </div>
+              <p className="text-gray-500 text-xs mt-2">
+                Cor selecionada: <span className="font-medium" style={{ color: formData.corPrincipal }}>{formData.corPrincipal}</span>
+              </p>
+            </div>
+
+            {/* Preview */}
+            <div>
+              <label className="block text-gray-400 text-sm mb-2">Pré-visualização</label>
+              <div 
+                className="rounded-xl p-4 border border-white/10"
+                style={{ backgroundColor: formData.corPrincipal + '20', borderColor: formData.corPrincipal + '50' }}
+              >
+                <div className="flex items-center gap-3">
+                  {formData.logo ? (
+                    <img src={formData.logo} alt="Logo" className="w-12 h-12 rounded-lg object-cover" />
+                  ) : (
+                    <div 
+                      className="w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-lg"
+                      style={{ backgroundColor: formData.corPrincipal }}
+                    >
+                      {formData.nome?.charAt(0) || '⛪'}
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-white font-semibold">{formData.nome || 'Nome da Igreja'}</p>
+                    <p className="text-gray-400 text-sm">Sua igreja conectada</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <button className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-xl hover:from-indigo-400 hover:to-purple-500 transition-all">
-        Salvar Alterações
-      </button>
+      {/* Redes Sociais */}
+      <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+          🌐 Redes Sociais
+        </h3>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-gray-400 text-sm mb-2">Instagram</label>
+            <div className="flex">
+              <span className="inline-flex items-center px-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-l-xl text-sm">
+                @
+              </span>
+              <input
+                type="text"
+                placeholder="suaigreja"
+                className="flex-1 p-3 bg-white/5 border border-white/10 border-l-0 rounded-r-xl text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-gray-400 text-sm mb-2">Facebook</label>
+            <div className="flex">
+              <span className="inline-flex items-center px-3 bg-blue-600 text-white rounded-l-xl text-sm">
+                fb.com/
+              </span>
+              <input
+                type="text"
+                placeholder="suaigreja"
+                className="flex-1 p-3 bg-white/5 border border-white/10 border-l-0 rounded-r-xl text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-gray-400 text-sm mb-2">YouTube</label>
+            <div className="flex">
+              <span className="inline-flex items-center px-3 bg-red-600 text-white rounded-l-xl text-sm">
+                youtube.com/
+              </span>
+              <input
+                type="text"
+                placeholder="@suaigreja"
+                className="flex-1 p-3 bg-white/5 border border-white/10 border-l-0 rounded-r-xl text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-gray-400 text-sm mb-2">WhatsApp da Igreja</label>
+            <div className="flex">
+              <span className="inline-flex items-center px-3 bg-green-500 text-white rounded-l-xl text-sm">
+                +351
+              </span>
+              <input
+                type="tel"
+                placeholder="912 345 678"
+                className="flex-1 p-3 bg-white/5 border border-white/10 border-l-0 rounded-r-xl text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Save Button */}
+      <motion.button 
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={handleSave}
+        disabled={saving}
+        className="px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-xl hover:from-indigo-400 hover:to-purple-500 transition-all shadow-lg shadow-indigo-500/30 flex items-center gap-2 disabled:opacity-50"
+      >
+        {saving ? (
+          <>
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+              className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
+            />
+            <span>Salvando...</span>
+          </>
+        ) : (
+          <>
+            <Save className="w-5 h-5" />
+            <span>Salvar Alterações</span>
+          </>
+        )}
+      </motion.button>
     </div>
   );
 }

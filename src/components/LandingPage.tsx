@@ -11,7 +11,10 @@ import {
 import { useLanguage } from '@/context/LanguageContext';
 import { useChurchData } from '@/contexts/ChurchDataContext';
 import { Bible3D } from './Bible3D';
-import type { Language } from '@/types';
+import { ServiceReminder, ServiceAlertButton } from './ServiceReminder';
+import type { Language, EventoCulto } from '@/types';
+
+// Using EventoCulto type for ServiceReminder
 
 interface LandingPageProps {
   onLogin: () => void;
@@ -54,6 +57,9 @@ export function LandingPage({ onLogin, onRegister }: LandingPageProps) {
     sms: false,
     email: false
   });
+  
+  // Service Reminder States
+  const [showServiceReminder, setShowServiceReminder] = useState(false);
 
   const languages: { code: Language; label: string; flag: string }[] = [
     { code: 'pt', label: 'Português', flag: '🇧🇷' },
@@ -86,6 +92,27 @@ export function LandingPage({ onLogin, onRegister }: LandingPageProps) {
     pregador: e.pregador || '',
     cantores: e.cantores || ''
   }));
+
+  // Convert events for ServiceReminder
+  const eventosParaReminder: EventoCulto[] = eventosContext.map(e => ({
+    id: e.id,
+    igreja_id: e.igreja_id,
+    titulo: e.titulo,
+    descricao: e.descricao || '',
+    data: new Date(e.data + 'T' + (e.horario || '10:00')),
+    tipo: e.tipo,
+    imagem: e.imagem,
+    local: e.local,
+    pregador: e.pregador,
+    cantores: e.cantores
+  }));
+
+  // Get next event for the alert button
+  const now = new Date();
+  const upcomingEvents = eventosParaReminder.filter(e => new Date(e.data) > now).sort((a, b) => 
+    new Date(a.data).getTime() - new Date(b.data).getTime()
+  );
+  const nextEvent = upcomingEvents[0] || null;
 
   // Use photos from context (created by admin)
   const galeriaFotos = fotosContext.map(f => ({
@@ -1124,7 +1151,7 @@ export function LandingPage({ onLogin, onRegister }: LandingPageProps) {
         </div>
       </footer>
 
-      {/* Floating Action Button */}
+      {/* Floating WhatsApp Button */}
       <motion.a
         href="https://wa.me/351912345678"
         target="_blank"
@@ -1132,10 +1159,44 @@ export function LandingPage({ onLogin, onRegister }: LandingPageProps) {
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ delay: 1, type: 'spring' }}
-        className="fixed bottom-6 right-6 z-40 w-14 h-14 bg-green-500 rounded-full flex items-center justify-center shadow-lg shadow-green-500/30 hover:bg-green-400 transition-all"
+        className="fixed bottom-6 left-6 z-40 w-14 h-14 bg-green-500 rounded-full flex items-center justify-center shadow-lg shadow-green-500/30 hover:bg-green-400 transition-all"
       >
         <MessageCircle className="w-7 h-7 text-white" />
       </motion.a>
+
+      {/* Floating Service Alert Button (Right side) */}
+      <ServiceAlertButton
+        onClick={() => setShowServiceReminder(true)}
+        hasUpcoming={upcomingEvents.length > 0}
+        nextEvent={nextEvent}
+        onOpenAgenda={() => {
+          const eventosSection = document.getElementById('eventos');
+          if (eventosSection) {
+            eventosSection.scrollIntoView({ behavior: 'smooth' });
+          }
+        }}
+      />
+
+      {/* Service Reminder Modal */}
+      <ServiceReminder
+        events={eventosParaReminder}
+        isOpen={showServiceReminder}
+        onClose={() => setShowServiceReminder(false)}
+        onViewAll={() => {
+          setShowServiceReminder(false);
+          const eventosSection = document.getElementById('eventos');
+          if (eventosSection) {
+            eventosSection.scrollIntoView({ behavior: 'smooth' });
+          }
+        }}
+        onOpenAgenda={() => {
+          setShowServiceReminder(false);
+          const eventosSection = document.getElementById('eventos');
+          if (eventosSection) {
+            eventosSection.scrollIntoView({ behavior: 'smooth' });
+          }
+        }}
+      />
 
       {/* Confirm Presence Modal */}
       <AnimatePresence>
