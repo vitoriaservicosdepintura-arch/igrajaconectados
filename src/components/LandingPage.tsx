@@ -197,10 +197,11 @@ export function LandingPage({ onLogin, onRegister }: LandingPageProps) {
     
     // Save presence to context
     addPresenca({
-      evento_id: parseInt(confirmForm.eventId),
+      igreja_id: 'public',
+      evento_id: confirmForm.eventId,
       nome: confirmForm.nome,
       whatsapp: confirmForm.telefone,
-      data_confirmacao: new Date().toISOString()
+      data: new Date().toISOString()
     });
     
     setTimeout(() => {
@@ -1151,17 +1152,44 @@ export function LandingPage({ onLogin, onRegister }: LandingPageProps) {
         </div>
       </footer>
 
-      {/* Floating WhatsApp Button */}
+      {/* Floating WhatsApp Button - Falar com Mayckon Luiz */}
       <motion.a
-        href="https://wa.me/351912345678"
+        href="https://wa.me/351965838589?text=Olá%20Mayckon%20Luiz!%20Vim%20pelo%20site%20da%20igreja%20e%20gostaria%20de%20mais%20informações."
         target="_blank"
         rel="noopener noreferrer"
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ delay: 1, type: 'spring' }}
-        className="fixed bottom-6 left-6 z-40 w-14 h-14 bg-green-500 rounded-full flex items-center justify-center shadow-lg shadow-green-500/30 hover:bg-green-400 transition-all"
+        className="fixed bottom-6 left-6 z-40 group"
       >
-        <MessageCircle className="w-7 h-7 text-white" />
+        <div className="relative">
+          {/* Main Button */}
+          <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-lg shadow-green-500/40 group-hover:from-green-400 group-hover:to-green-500 transition-all group-hover:scale-110">
+            <MessageCircle className="w-7 h-7 text-white" />
+          </div>
+          
+          {/* Pulse Animation */}
+          <div className="absolute inset-0 w-14 h-14 bg-green-500 rounded-full animate-ping opacity-30"></div>
+          
+          {/* Tooltip */}
+          <div className="absolute left-16 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all pointer-events-none">
+            <div className="bg-slate-800 text-white px-4 py-2 rounded-lg shadow-xl whitespace-nowrap border border-green-500/30">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                  ML
+                </div>
+                <div>
+                  <p className="font-bold text-sm">Mayckon Luiz</p>
+                  <p className="text-green-400 text-xs">+351 965 838 589</p>
+                </div>
+              </div>
+              <div className="absolute right-full top-1/2 -translate-y-1/2 border-8 border-transparent border-r-slate-800"></div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Badge Online */}
+        <span className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 border-2 border-slate-900 rounded-full animate-pulse"></span>
       </motion.a>
 
       {/* Floating Service Alert Button (Right side) */}
@@ -1624,8 +1652,7 @@ export function LandingPage({ onLogin, onRegister }: LandingPageProps) {
                             
                             // Save donation to context/database
                             addDoacao({
-                              igreja_id: 1,
-                              membro_id: 0,
+                              igreja_id: 'public',
                               valor: parseFloat(donationForm.valor),
                               tipo: donationForm.tipo,
                               data: new Date().toISOString(),
@@ -1633,8 +1660,7 @@ export function LandingPage({ onLogin, onRegister }: LandingPageProps) {
                               nome_doador: donationForm.nome,
                               whatsapp_doador: donationForm.whatsapp,
                               email_doador: donationForm.email,
-                              mensagem: donationForm.mensagem,
-                              status: 'confirmado'
+                              mensagem: donationForm.mensagem
                             });
                             
                             // Simulate sending notifications

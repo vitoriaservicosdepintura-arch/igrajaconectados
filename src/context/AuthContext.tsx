@@ -85,17 +85,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = async (email: string, password: string, role: UserRole = 'admin'): Promise<boolean> => {
+  const login = async (nameOrEmail: string, password: string, role: UserRole = 'admin'): Promise<boolean> => {
     await new Promise(resolve => setTimeout(resolve, 500));
     
     const users = loadUsers();
     const existingIgrejas = loadIgrejas();
     
-    // Encontrar usuário
-    const foundUser = users.find(u => u.email === email && u.password === password);
+    // Encontrar usuário por nome OU email
+    const foundUser = users.find(u => 
+      (u.nome.toLowerCase() === nameOrEmail.toLowerCase() || u.email.toLowerCase() === nameOrEmail.toLowerCase()) 
+      && u.password === password
+    );
     
     if (!foundUser) {
-      alert('E-mail ou senha incorretos!');
+      alert('Nome do Pastor ou senha incorretos!');
       return false;
     }
 

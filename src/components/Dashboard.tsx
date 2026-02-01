@@ -476,7 +476,7 @@ function MembersSection({ members: initialMembers }: { members: Membro[] }) {
 
   const filteredMembers = members.filter(member =>
     member.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    member.email.toLowerCase().includes(searchTerm.toLowerCase())
+    (member.email && member.email.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const openNewMemberModal = () => {
@@ -489,7 +489,7 @@ function MembersSection({ members: initialMembers }: { members: Membro[] }) {
     setEditingMember(member);
     setFormData({
       nome: member.nome,
-      email: member.email,
+      email: member.email || '',
       telefone: member.telefone || '',
       data_batismo: member.data_batismo ? new Date(member.data_batismo).toISOString().split('T')[0] : '',
       status: member.status
@@ -4036,7 +4036,7 @@ function GallerySection() {
       {/* Videos Section */}
       <div>
         <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-          🎬 Vídeos
+          �� Vídeos
           <span className="bg-pink-500/20 text-pink-400 text-xs px-2 py-1 rounded-full">{videos.length}</span>
         </h3>
         {videos.length > 0 ? (

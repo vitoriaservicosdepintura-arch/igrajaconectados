@@ -46,13 +46,13 @@ export function MemberPortal({ onLogout }: MemberPortalProps) {
     id: String(e.id),
     igreja_id: String(e.igreja_id),
     titulo: e.titulo,
-    descricao: e.descricao,
+    descricao: e.descricao || '',
     data: new Date(e.data + 'T' + (e.horario || '10:00')),
     tipo: e.tipo,
-    pregador: e.pregador,
-    cantores: e.cantores,
-    imagem: e.imagem,
-    local: e.local
+    pregador: e.pregador || '',
+    cantores: e.cantores || '',
+    imagem: e.imagem || '',
+    local: e.local || ''
   }));
 
   // Convert context photos
@@ -72,16 +72,26 @@ export function MemberPortal({ onLogout }: MemberPortalProps) {
   }));
   void _contextVideos; // Mark as intentionally unused for now
 
-  // Quiz questions from context
-  const quizQuestions = quizQuestionsContext.map(q => ({
-    id: String(q.id),
-    pergunta: q.pergunta,
-    opcoes: q.opcoes,
-    resposta_correta: q.resposta_correta,
-    imagem: q.imagem,
-    dificuldade: q.dificuldade || 'facil',
-    pontos: q.pontos || 30
-  }));
+  // Quiz questions from context or default questions
+  const defaultQuestions = [
+    { id: '1', pergunta: 'Quem construiu a arca?', opcoes: ['Moisés', 'Noé', 'Abraão', 'Davi'], resposta_correta: 1, imagem: '', dificuldade: 'facil', pontos: 30 },
+    { id: '2', pergunta: 'Quantos discípulos Jesus tinha?', opcoes: ['10', '11', '12', '13'], resposta_correta: 2, imagem: '', dificuldade: 'facil', pontos: 30 },
+    { id: '3', pergunta: 'Quem matou Golias?', opcoes: ['Saul', 'Davi', 'Salomão', 'Samuel'], resposta_correta: 1, imagem: '', dificuldade: 'facil', pontos: 30 },
+    { id: '4', pergunta: 'Qual era a profissão de Jesus?', opcoes: ['Pescador', 'Carpinteiro', 'Pastor', 'Escriba'], resposta_correta: 1, imagem: '', dificuldade: 'medio', pontos: 50 },
+    { id: '5', pergunta: 'Quantos dias Jesus ficou no deserto?', opcoes: ['30', '40', '50', '60'], resposta_correta: 1, imagem: '', dificuldade: 'medio', pontos: 50 }
+  ];
+  
+  const quizQuestions = quizQuestionsContext.length > 0 
+    ? quizQuestionsContext.map(q => ({
+        id: String(q.id),
+        pergunta: q.pergunta,
+        opcoes: q.opcoes,
+        resposta_correta: q.resposta_correta,
+        imagem: q.imagem || '',
+        dificuldade: q.dificuldade || 'facil',
+        pontos: 30
+      }))
+    : defaultQuestions;
 
   // Ranking from context
   const rankingData = rankingContext.map(r => ({
@@ -156,10 +166,11 @@ export function MemberPortal({ onLogout }: MemberPortalProps) {
     
     // Save presence to context
     addPresenca({
-      evento_id: parseInt(selectedEvent.id),
+      igreja_id: selectedEvent.igreja_id,
+      evento_id: selectedEvent.id,
       nome: presenceForm.nome,
       whatsapp: presenceForm.whatsapp,
-      data_confirmacao: new Date().toISOString()
+      data: new Date().toISOString()
     });
     
     await new Promise(resolve => setTimeout(resolve, 2000));
@@ -178,6 +189,7 @@ export function MemberPortal({ onLogout }: MemberPortalProps) {
     
     // Save message to context
     addMensagemPastor({
+      igreja_id: 'public',
       nome: user?.nome || 'Anônimo',
       whatsapp: '',
       assunto: messageForm.assunto,
