@@ -1,99 +1,65 @@
-// Database Types
-export interface Igreja {
+export interface PrayerRequest {
   id: string;
-  nome: string;
+  name: string;
+  message: string;
+  isPublic: boolean;
+  prayingCount: number;
+  createdAt: Date;
+}
+
+export interface Event {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  location: string;
+  description: string;
+  image?: string;
+}
+
+export interface Member {
+  id: string;
+  name: string;
   email: string;
-  telefone: string;
-  logo?: string;
-  cores: {
-    primary: string;
-    secondary: string;
-  };
-  plano_id: string;
-  status: 'ativo' | 'inativo' | 'pendente';
-  idioma_padrao: 'pt' | 'en' | 'es';
-  data_cadastro: Date;
+  phone: string;
+  joinDate: Date;
+  donations: Donation[];
 }
 
-export interface Usuario {
+export interface Donation {
   id: string;
-  igreja_id: string;
-  nome: string;
-  email: string;
-  senha: string;
-  role: 'admin' | 'pastor' | 'lider' | 'membro';
-  telefone?: string;
+  amount: number;
+  currency: 'EUR' | 'BRL';
+  method: 'MBWAY' | 'PIX' | 'TRANSFER';
+  date: Date;
+  project?: string;
 }
 
-export interface Membro {
+export interface QuizQuestion {
   id: string;
-  igreja_id: string;
-  nome: string;
-  email?: string;
-  telefone?: string;
-  data_batismo?: Date;
-  status: 'ativo' | 'inativo';
-  foto?: string;
+  question: string;
+  options: string[];
+  correctIndex: number;
+  category: string;
 }
 
-export interface EventoCulto {
+export interface CellGroup {
   id: string;
-  igreja_id: string;
-  titulo: string;
-  descricao?: string;
-  data: Date;
-  tipo: 'culto' | 'evento';
-  pregador?: string;
-  cantores?: string;
-  imagem?: string;
-  local?: string;
-}
-
-export interface Aviso {
-  id: string;
-  igreja_id: string;
-  mensagem: string;
-  canal: 'whatsapp' | 'email' | 'sms' | 'interno';
-  data: Date;
-}
-
-export interface QuizEscolinha {
-  id: string;
-  igreja_id: string;
-  pergunta: string;
-  opcoes: string[];
-  resposta_correta: number;
-  imagem?: string;
-}
-
-export interface Doacao {
-  id: string;
-  igreja_id: string;
-  membro_id?: string;
-  valor: number;
-  tipo: 'dizimo' | 'oferta';
-  data: Date | string;
-  metodo?: 'mbway' | 'iban' | 'pix' | 'transferencia';
-  nome_doador?: string;
-  whatsapp_doador?: string;
-  email_doador?: string;
-  mensagem?: string;
-  status?: 'pendente' | 'confirmado';
-}
-
-export interface Plano {
-  id: string;
-  nome: string;
-  preco: number;
-  limites: {
-    membros: number;
-    recursos: string[];
-  };
-  popular?: boolean;
+  name: string;
+  leader: string;
+  address: string;
+  lat: number;
+  lng: number;
+  dayOfWeek: string;
+  time: string;
 }
 
 export type Language = 'pt' | 'en' | 'es';
 
-export interface TranslationStrings {
-  [key: string]: string | TranslationStrings;
+export interface Translations {
+  [key: string]: {
+    pt: string;
+    en: string;
+    es: string;
+  };
 }

@@ -1,0 +1,240 @@
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Clock, MapPin, Plus, Check, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { Event } from '../../types';
+
+const mockEvents: Event[] = [
+  {
+    id: '1',
+    title: 'Culto de Celebração',
+    date: '2025-01-19',
+    time: '10:00',
+    location: 'Templo Principal',
+    description: 'Culto dominical com louvor e pregação da Palavra.',
+  },
+  {
+    id: '2',
+    title: 'Noite de Louvor',
+    date: '2025-01-22',
+    time: '19:30',
+    location: 'Templo Principal',
+    description: 'Uma noite especial de adoração e comunhão.',
+  },
+  {
+    id: '3',
+    title: 'Conferência de Jovens',
+    date: '2025-01-25',
+    time: '18:00',
+    location: 'Salão de Eventos',
+    description: 'Evento especial para jovens com palestras e workshops.',
+  },
+  {
+    id: '4',
+    title: 'Culto de Oração',
+    date: '2025-01-29',
+    time: '19:00',
+    location: 'Templo Principal',
+    description: 'Momento especial de oração e intercessão.',
+  },
+  {
+    id: '5',
+    title: 'Escolinha Dominical',
+    date: '2025-02-02',
+    time: '09:00',
+    location: 'Salas de Aula',
+    description: 'Aulas bíblicas para crianças de todas as idades.',
+  },
+];
+
+export function EventsSection() {
+  const { t } = useLanguage();
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [addedEvents, setAddedEvents] = useState<string[]>([]);
+
+  const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
+  const firstDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getDay();
+  
+  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  const emptyDays = Array.from({ length: firstDayOfMonth }, (_, i) => i);
+
+  const getEventsForDay = (day: number) => {
+    const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    return mockEvents.filter(e => e.date === dateStr);
+  };
+
+  const addToCalendar = (event: Event) => {
+    const startDate = new Date(`${event.date}T${event.time}`);
+    const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
+    
+    const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${startDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}/${endDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}&details=${encodeURIComponent(event.description)}&location=${encodeURIComponent(event.location)}`;
+    
+    window.open(googleCalendarUrl, '_blank');
+    setAddedEvents([...addedEvents, event.id]);
+  };
+
+  const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+  const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+  return (
+    <section className="py-20 bg-white" id="events">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-12"
+        >
+          <span className="inline-block px-4 py-2 rounded-full bg-orange-100 text-orange-600 text-sm font-medium mb-4">
+            {t('events')}
+          </span>
+          <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
+            {t('upcomingEvents')}
+          </h2>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Participe dos nossos eventos e fortaleça sua fé em comunidade.
+          </p>
+        </motion.div>
+
+        <div className="grid lg:grid-cols-5 gap-8">
+          {/* Calendar */}
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="lg:col-span-3"
+          >
+            <div className="bg-gray-50 rounded-3xl p-6 md:p-8 shadow-lg" style={{ perspective: '1000px' }}>
+              {/* Calendar Header */}
+              <div className="flex items-center justify-between mb-6">
+                <button
+                  onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
+                  className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <h3 className="text-xl font-bold text-gray-900">
+                  {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+                </h3>
+                <button
+                  onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
+                  className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Day Headers */}
+              <div className="grid grid-cols-7 gap-1 mb-2">
+                {dayNames.map(day => (
+                  <div key={day} className="text-center text-sm font-medium text-gray-500 py-2">
+                    {day}
+                  </div>
+                ))}
+              </div>
+
+              {/* Calendar Days */}
+              <div className="grid grid-cols-7 gap-1">
+                {emptyDays.map(i => (
+                  <div key={`empty-${i}`} className="aspect-square" />
+                ))}
+                {days.map(day => {
+                  const events = getEventsForDay(day);
+                  const isToday = new Date().getDate() === day && new Date().getMonth() === currentMonth.getMonth();
+                  
+                  return (
+                    <motion.div
+                      key={day}
+                      whileHover={{ scale: 1.1, zIndex: 10 }}
+                      className={`aspect-square p-1 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-colors ${
+                        isToday ? 'bg-gradient-to-br from-orange-500 to-blue-600 text-white' :
+                        events.length > 0 ? 'bg-orange-100 text-orange-700' : 'hover:bg-gray-100'
+                      }`}
+                    >
+                      <span className="text-sm font-medium">{day}</span>
+                      {events.length > 0 && (
+                        <div className="flex gap-0.5 mt-1">
+                          {events.slice(0, 3).map((_, i) => (
+                            <div key={i} className={`w-1.5 h-1.5 rounded-full ${isToday ? 'bg-white' : 'bg-orange-500'}`} />
+                          ))}
+                        </div>
+                      )}
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Events List */}
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="lg:col-span-2 space-y-4"
+          >
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Próximos Eventos</h3>
+            
+            {mockEvents.slice(0, 4).map((event, index) => (
+              <motion.div
+                key={event.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ x: 5 }}
+                className="bg-white rounded-2xl p-4 shadow-lg border border-gray-100 hover:border-orange-200 transition-colors"
+              >
+                <div className="flex gap-4">
+                  {/* Date Badge */}
+                  <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-orange-500 to-blue-600 rounded-xl flex flex-col items-center justify-center text-white">
+                    <span className="text-lg font-bold">{new Date(event.date).getDate()}</span>
+                    <span className="text-xs">{monthNames[new Date(event.date).getMonth()].slice(0, 3)}</span>
+                  </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-bold text-gray-900 truncate">{event.title}</h4>
+                    <div className="flex items-center gap-3 text-sm text-gray-500 mt-1">
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {event.time}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        {event.location}
+                      </span>
+                    </div>
+                    
+                    <motion.button
+                      onClick={() => addToCalendar(event)}
+                      disabled={addedEvents.includes(event.id)}
+                      className={`mt-3 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                        addedEvents.includes(event.id)
+                          ? 'bg-green-100 text-green-600'
+                          : 'bg-orange-100 text-orange-600 hover:bg-orange-200'
+                      }`}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {addedEvents.includes(event.id) ? (
+                        <>
+                          <Check className="w-3 h-3" />
+                          Adicionado
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="w-3 h-3" />
+                          {t('addToCalendar')}
+                        </>
+                      )}
+                    </motion.button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+}
