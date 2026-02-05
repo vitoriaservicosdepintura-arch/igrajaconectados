@@ -2,38 +2,40 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
-
-const images = [
-  { id: '1', title: 'Culto de Celebração', category: 'Cultos', emoji: '🙏' },
-  { id: '2', title: 'Batismo nas Águas', category: 'Batismos', emoji: '💧' },
-  { id: '3', title: 'Conferência de Jovens', category: 'Eventos', emoji: '🎉' },
-  { id: '4', title: 'Escolinha Dominical', category: 'Escolinha', emoji: '📚' },
-  { id: '5', title: 'Louvor e Adoração', category: 'Cultos', emoji: '🎵' },
-  { id: '6', title: 'Missões em Moçambique', category: 'Missões', emoji: '🌍' },
-  { id: '7', title: 'Confraternização de Natal', category: 'Eventos', emoji: '🎄' },
-  { id: '8', title: 'Reunião de Células', category: 'Células', emoji: '🏠' },
-];
+import { useData } from '../../contexts/DataContext';
 
 const categories = ['Todos', 'Cultos', 'Batismos', 'Eventos', 'Escolinha', 'Missões', 'Células'];
 
+const emojiMap: Record<string, string> = {
+  'Cultos': '🙏',
+  'Batismos': '💧',
+  'Eventos': '🎉',
+  'Escolinha': '📚',
+  'Missões': '🌍',
+  'Células': '🏠',
+};
+
 export function GallerySection() {
   const { t } = useLanguage();
+  const { galleryPhotos } = useData();
   const [activeCategory, setActiveCategory] = useState('Todos');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const filteredImages = activeCategory === 'Todos' 
-    ? images 
-    : images.filter(img => img.category === activeCategory);
+    ? galleryPhotos 
+    : galleryPhotos.filter(img => img.category === activeCategory);
 
-  const currentImageIndex = selectedImage ? images.findIndex(img => img.id === selectedImage) : -1;
+  const currentImageIndex = selectedImage ? galleryPhotos.findIndex(img => img.id === selectedImage) : -1;
 
   const navigateImage = (direction: 'prev' | 'next') => {
     if (currentImageIndex === -1) return;
     const newIndex = direction === 'prev' 
-      ? (currentImageIndex - 1 + images.length) % images.length
-      : (currentImageIndex + 1) % images.length;
-    setSelectedImage(images[newIndex].id);
+      ? (currentImageIndex - 1 + galleryPhotos.length) % galleryPhotos.length
+      : (currentImageIndex + 1) % galleryPhotos.length;
+    setSelectedImage(galleryPhotos[newIndex].id);
   };
+
+  const getEmoji = (category: string) => emojiMap[category] || '📷';
 
   return (
     <section className="py-20 bg-white" id="gallery">
@@ -93,9 +95,13 @@ export function GallerySection() {
                 onClick={() => setSelectedImage(image.id)}
                 className="group relative aspect-square bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl overflow-hidden cursor-pointer shadow-lg"
               >
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-6xl">{image.emoji}</span>
-                </div>
+                {image.url ? (
+                  <img src={image.url} alt={image.title} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-6xl">{getEmoji(image.category)}</span>
+                  </div>
+                )}
                 
                 {/* Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
@@ -111,6 +117,12 @@ export function GallerySection() {
             ))}
           </AnimatePresence>
         </motion.div>
+
+        {filteredImages.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-500">Nenhuma foto encontrada nesta categoria.</p>
+          </div>
+        )}
 
         {/* Lightbox */}
         <AnimatePresence>
@@ -148,12 +160,20 @@ export function GallerySection() {
                 animate={{ scale: 1 }}
                 exit={{ scale: 0.8 }}
                 onClick={(e) => e.stopPropagation()}
-                className="max-w-4xl w-full aspect-video bg-gradient-to-br from-orange-500 to-blue-600 rounded-3xl flex items-center justify-center"
+                className="max-w-4xl w-full aspect-video bg-gradient-to-br from-orange-500 to-blue-600 rounded-3xl flex items-center justify-center overflow-hidden"
               >
-                <div className="text-center text-white">
-                  <span className="text-9xl">{images.find(img => img.id === selectedImage)?.emoji}</span>
-                  <p className="text-2xl font-bold mt-4">{images.find(img => img.id === selectedImage)?.title}</p>
-                </div>
+                {galleryPhotos.find(img => img.id === selectedImage)?.url ? (
+                  <img 
+                    src={galleryPhotos.find(img => img.id === selectedImage)?.url} 
+                    alt={galleryPhotos.find(img => img.id === selectedImage)?.title}
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <div className="text-center text-white">
+                    <span className="text-9xl">{getEmoji(galleryPhotos.find(img => img.id === selectedImage)?.category || '')}</span>
+                    <p className="text-2xl font-bold mt-4">{galleryPhotos.find(img => img.id === selectedImage)?.title}</p>
+                  </div>
+                )}
               </motion.div>
             </motion.div>
           )}

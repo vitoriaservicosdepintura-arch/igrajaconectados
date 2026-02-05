@@ -2,33 +2,55 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Bell, X, Calendar, Clock, MapPin, Send, Check } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useData } from '../contexts/DataContext';
 
-interface FloatingWidgetsProps {
-  whatsappNumber: string;
-}
+const WHATSAPP_NUMBER = '351965838589';
+const WHATSAPP_NAME = 'Mayckon';
 
-export function FloatingWidgets({ whatsappNumber }: FloatingWidgetsProps) {
+export function FloatingWidgets() {
   const { t } = useLanguage();
+  const { events } = useData();
   const [showNotification, setShowNotification] = useState(false);
   const [showPresenceForm, setShowPresenceForm] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
   const [submitted, setSubmitted] = useState(false);
   const [consent, setConsent] = useState(false);
 
-  const nextService = {
+  // Get next scheduled event
+  const nextEvent = events
+    .filter(e => e.status === 'scheduled' && new Date(e.date) >= new Date())
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
+
+  const nextService = nextEvent ? {
+    title: nextEvent.title,
+    date: new Date(nextEvent.date).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'short' }),
+    time: nextEvent.time,
+    location: nextEvent.location,
+    pastorName: nextEvent.pastorName
+  } : {
     title: 'Culto de Celebração',
     date: 'Domingo, 19 Jan',
     time: '10:00',
-    location: 'Templo Principal'
+    location: 'Templo Principal',
+    pastorName: 'Pr. João Silva'
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!consent) return;
     
-    // Simulate WhatsApp integration
-    const message = encodeURIComponent(`Olá! Gostaria de confirmar minha presença no ${nextService.title}.\n\nNome: ${formData.name}\nEmail: ${formData.email}\nTelefone: ${formData.phone}`);
-    window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
+    // WhatsApp integration with correct number
+    const message = encodeURIComponent(
+      `Olá ${WHATSAPP_NAME}! Gostaria de confirmar minha presença no ${nextService.title}.\n\n` +
+      `📅 Data: ${nextService.date}\n` +
+      `⏰ Horário: ${nextService.time}\n` +
+      `📍 Local: ${nextService.location}\n\n` +
+      `Meus dados:\n` +
+      `Nome: ${formData.name}\n` +
+      `Email: ${formData.email}\n` +
+      `Telefone: ${formData.phone}`
+    );
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
     
     setSubmitted(true);
     setTimeout(() => {
@@ -41,8 +63,8 @@ export function FloatingWidgets({ whatsappNumber }: FloatingWidgetsProps) {
   };
 
   const openWhatsApp = () => {
-    const message = encodeURIComponent('Olá! Gostaria de falar com alguém da Igreja Conectada.');
-    window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
+    const message = encodeURIComponent(`Olá ${WHATSAPP_NAME}! Gostaria de falar com alguém da Igreja Conectada.`);
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
   };
 
   return (
@@ -67,6 +89,7 @@ export function FloatingWidgets({ whatsappNumber }: FloatingWidgetsProps) {
             className="absolute left-full ml-3 px-4 py-2 bg-white rounded-lg shadow-lg whitespace-nowrap"
           >
             <p className="text-sm font-medium text-gray-900">{t('talkToUs')}</p>
+            <p className="text-xs text-gray-500">{WHATSAPP_NAME}</p>
           </motion.div>
         </div>
       </motion.button>
@@ -144,6 +167,11 @@ export function FloatingWidgets({ whatsappNumber }: FloatingWidgetsProps) {
                           <MapPin className="w-4 h-4 text-orange-500" />
                           <span className="text-sm">{nextService.location}</span>
                         </div>
+                        {nextService.pastorName && (
+                          <div className="flex items-center gap-3 text-gray-600">
+                            <span className="text-sm">🎤 {nextService.pastorName}</span>
+                          </div>
+                        )}
                       </div>
                     </motion.div>
 

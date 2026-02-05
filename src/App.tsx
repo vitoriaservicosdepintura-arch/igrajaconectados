@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { LanguageProvider } from './contexts/LanguageContext';
+import { DataProvider } from './contexts/DataContext';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { VersePopup } from './components/VersePopup';
@@ -119,78 +120,80 @@ export function App() {
 
   return (
     <LanguageProvider>
-      <div className="min-h-screen bg-white" style={{ fontFamily: "'Inter', sans-serif" }}>
-        {/* Header - Always visible */}
-        <Header
-          onNavigate={handleNavigate}
-          currentSection={currentSection}
-          isLoggedIn={isLoggedIn}
-          onLogin={handleLoginClick}
-          isAdmin={isAdmin}
-        />
+      <DataProvider>
+        <div className="min-h-screen bg-white" style={{ fontFamily: "'Inter', sans-serif" }}>
+          {/* Header - Always visible */}
+          <Header
+            onNavigate={handleNavigate}
+            currentSection={currentSection}
+            isLoggedIn={isLoggedIn}
+            onLogin={handleLoginClick}
+            isAdmin={isAdmin}
+          />
 
-        {/* Main Content */}
-        {currentView === 'public' && (
-          <>
-            <div ref={sectionRefs.home}>
-              <HeroSection onNavigate={handleNavigate} />
-            </div>
-            <div ref={sectionRefs.about}>
-              <AboutSection />
-            </div>
-            <div ref={sectionRefs.events}>
-              <EventsSection />
-            </div>
-            <div ref={sectionRefs.prayer}>
-              <PrayerWallSection />
-            </div>
-            <div ref={sectionRefs.media}>
-              <MediaSection />
-            </div>
-            <div ref={sectionRefs.gallery}>
-              <GallerySection />
-            </div>
-            <div ref={sectionRefs.quiz}>
-              <QuizSection />
-            </div>
-            <div ref={sectionRefs.donations}>
-              <DonationsSection />
-            </div>
-            <div ref={sectionRefs.cells}>
-              <CellsSection />
-            </div>
-            <div ref={sectionRefs.contact}>
-              <ContactSection />
-            </div>
-            <Footer onNavigate={handleNavigate} />
-          </>
-        )}
+          {/* Main Content */}
+          {currentView === 'public' && (
+            <>
+              <div ref={sectionRefs.home}>
+                <HeroSection onNavigate={handleNavigate} />
+              </div>
+              <div ref={sectionRefs.about}>
+                <AboutSection />
+              </div>
+              <div ref={sectionRefs.events}>
+                <EventsSection />
+              </div>
+              <div ref={sectionRefs.prayer}>
+                <PrayerWallSection />
+              </div>
+              <div ref={sectionRefs.media}>
+                <MediaSection />
+              </div>
+              <div ref={sectionRefs.gallery}>
+                <GallerySection />
+              </div>
+              <div ref={sectionRefs.quiz}>
+                <QuizSection />
+              </div>
+              <div ref={sectionRefs.donations}>
+                <DonationsSection />
+              </div>
+              <div ref={sectionRefs.cells}>
+                <CellsSection />
+              </div>
+              <div ref={sectionRefs.contact}>
+                <ContactSection />
+              </div>
+              <Footer onNavigate={handleNavigate} />
+            </>
+          )}
 
-        {currentView === 'member' && (
-          <MemberArea onLogout={handleLogout} memberName={memberName} />
-        )}
+          {currentView === 'member' && (
+            <MemberArea onLogout={handleLogout} memberName={memberName} />
+          )}
 
-        {currentView === 'admin' && (
-          <AdminPanel onLogout={handleLogout} />
-        )}
+          {currentView === 'admin' && (
+            <AdminPanel onLogout={handleLogout} />
+          )}
 
-        {/* Floating Widgets - Only on public view */}
-        {currentView === 'public' && (
-          <FloatingWidgets whatsappNumber="351912345678" />
-        )}
+          {/* Floating Widgets - Only on public view */}
+          {currentView === 'public' && (
+            <FloatingWidgets />
+          )}
 
-        {/* Modals */}
-        <VersePopup 
-          isOpen={showVersePopup} 
-          onClose={() => setShowVersePopup(false)} 
-        />
-        
-        <LoginModal
-          isOpen={showLoginModal}
-          onClose={() => setShowLoginModal(false)}
-          onLogin={handleLogin}
-        />
-      </div>
+          {/* Modals */}
+          <VersePopup 
+            isOpen={showVersePopup} 
+            onClose={() => setShowVersePopup(false)} 
+          />
+          
+          <LoginModal
+            isOpen={showLoginModal}
+            onClose={() => setShowLoginModal(false)}
+            onLogin={handleLogin}
+          />
+        </div>
+      </DataProvider>
     </LanguageProvider>
   );
 }

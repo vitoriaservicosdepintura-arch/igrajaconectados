@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Headphones, Clock, Eye, Calendar } from 'lucide-react';
+import { Play, Headphones, Clock, Eye, Calendar, ExternalLink } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useData } from '../../contexts/DataContext';
 
 const videos = [
   { id: '1', title: 'A Fé que Move Montanhas', speaker: 'Pr. João Silva', date: '2025-01-12', views: 1250, duration: '45:30', thumbnail: '🎬' },
@@ -19,7 +20,12 @@ const podcasts = [
 
 export function MediaSection() {
   const { t } = useLanguage();
+  const { youtubeChannelUrl, liveStream } = useData();
   const [activeTab, setActiveTab] = useState<'videos' | 'podcasts'>('videos');
+
+  const openYouTube = () => {
+    window.open(youtubeChannelUrl, '_blank');
+  };
 
   return (
     <section className="py-20 bg-gray-900" id="media">
@@ -76,6 +82,7 @@ export function MediaSection() {
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
                 whileHover={{ y: -10 }}
+                onClick={openYouTube}
                 className="group cursor-pointer"
               >
                 {/* Thumbnail */}
@@ -179,24 +186,38 @@ export function MediaSection() {
             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-                  <span className="text-white/80 text-sm font-medium uppercase tracking-wider">AO VIVO</span>
+                  <span className={`w-3 h-3 rounded-full ${liveStream?.isLive ? 'bg-red-500 animate-pulse' : 'bg-white/50'}`} />
+                  <span className="text-white/80 text-sm font-medium uppercase tracking-wider">
+                    {liveStream?.isLive ? 'AO VIVO AGORA' : 'AO VIVO'}
+                  </span>
                 </div>
                 <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">
-                  Culto de Domingo
+                  {liveStream?.isLive ? liveStream.title : 'Culto de Domingo'}
                 </h3>
                 <p className="text-white/80">
-                  Todos os domingos às 10h no nosso canal do YouTube
+                  {liveStream?.isLive 
+                    ? 'Estamos ao vivo! Clique para assistir.'
+                    : 'Todos os domingos às 10h no nosso canal do YouTube'}
                 </p>
               </div>
 
               <motion.button
+                onClick={openYouTube}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="flex items-center gap-3 px-8 py-4 bg-white text-gray-900 font-bold rounded-xl shadow-lg"
               >
-                <Play className="w-6 h-6" />
-                Assistir Agora
+                {liveStream?.isLive ? (
+                  <>
+                    <span className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+                    Assistir Ao Vivo
+                  </>
+                ) : (
+                  <>
+                    <ExternalLink className="w-6 h-6" />
+                    Ver Canal
+                  </>
+                )}
               </motion.button>
             </div>
           </div>

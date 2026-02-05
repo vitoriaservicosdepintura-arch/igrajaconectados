@@ -1,51 +1,49 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Send, Lock, Globe, Users } from 'lucide-react';
+import { Heart, Send, Lock, Globe, Users, Check } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { PrayerRequest } from '../../types';
-
-const initialPrayers: PrayerRequest[] = [
-  { id: '1', name: 'Maria', message: 'Peço oração pela saúde da minha mãe.', isPublic: true, prayingCount: 45, createdAt: new Date() },
-  { id: '2', name: 'João', message: 'Preciso de direção para uma decisão importante no trabalho.', isPublic: true, prayingCount: 32, createdAt: new Date() },
-  { id: '3', name: 'Ana', message: 'Agradeço a Deus pela cura que recebi!', isPublic: true, prayingCount: 78, createdAt: new Date() },
-  { id: '4', name: 'Pedro', message: 'Oração pela paz na minha família.', isPublic: true, prayingCount: 56, createdAt: new Date() },
-  { id: '5', name: 'Carla', message: 'Pela salvação dos meus filhos.', isPublic: true, prayingCount: 89, createdAt: new Date() },
-];
+import { useData } from '../../contexts/DataContext';
 
 export function PrayerWallSection() {
   const { t } = useLanguage();
-  const [prayers, setPrayers] = useState<PrayerRequest[]>(initialPrayers);
+  const { prayerRequests, addPrayerRequest, incrementPrayingCount } = useData();
   const [newPrayer, setNewPrayer] = useState({ name: '', message: '', isPublic: true });
   const [prayedFor, setPrayedFor] = useState<string[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [consent, setConsent] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPrayer.name || !newPrayer.message || !consent) return;
     
-    const prayer: PrayerRequest = {
-      id: Date.now().toString(),
+    // Add prayer request - public ones are auto-approved, private go to admin
+    addPrayerRequest({
       name: newPrayer.name,
       message: newPrayer.message,
       isPublic: newPrayer.isPublic,
       prayingCount: 1,
-      createdAt: new Date(),
-    };
+      createdAt: new Date().toISOString(),
+    });
     
-    setPrayers([prayer, ...prayers]);
-    setNewPrayer({ name: '', message: '', isPublic: true });
-    setShowForm(false);
-    setConsent(false);
+    setSubmitted(true);
+    setTimeout(() => {
+      setNewPrayer({ name: '', message: '', isPublic: true });
+      setShowForm(false);
+      setConsent(false);
+      setSubmitted(false);
+    }, 2000);
   };
 
   const handlePray = (id: string) => {
     if (prayedFor.includes(id)) return;
-    setPrayers(prayers.map(p => p.id === id ? { ...p, prayingCount: p.prayingCount + 1 } : p));
+    incrementPrayingCount(id);
     setPrayedFor([...prayedFor, id]);
   };
 
-  const totalPraying = prayers.reduce((acc, p) => acc + p.prayingCount, 0);
+  // Only show approved public prayers
+  const publicPrayers = prayerRequests.filter(p => p.isPublic && p.status === 'approved');
+  const totalPraying = publicPrayers.reduce((acc, p) => acc + p.prayingCount, 0);
 
   return (
     <section className="py-20 bg-gradient-to-br from-blue-50 via-white to-orange-50" id="prayer">
@@ -104,6 +102,24 @@ export function PrayerWallSection() {
                   <span className="text-lg">{t('prayerRequest')}</span>
                 </div>
               </motion.button>
+            ) : submitted ? (
+              <motion.div
+                key="success"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                className="w-full max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-8 text-center"
+              >
+                <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
+                  <Check className="w-8 h-8 text-green-500" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Pedido Enviado!</h3>
+                <p className="text-gray-600">
+                  {newPrayer.isPublic 
+                    ? 'Seu pedido foi adicionado ao mural de oração.' 
+                    : 'Seu pedido privado foi enviado para análise da liderança.'}
+                </p>
+              </motion.div>
             ) : (
               <motion.form
                 key="form"
@@ -151,6 +167,7 @@ export function PrayerWallSection() {
                       />
                       <Globe className="w-4 h-4 text-gray-500" />
                       <span className="text-sm text-gray-700">{t('public')}</span>
+                      <span className="text-xs text-gray-400">(Aparece no mural)</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
@@ -162,6 +179,7 @@ export function PrayerWallSection() {
                       />
                       <Lock className="w-4 h-4 text-gray-500" />
                       <span className="text-sm text-gray-700">{t('private')}</span>
+                      <span className="text-xs text-gray-400">(Só a liderança vê)</span>
                     </label>
                   </div>
 
@@ -203,7 +221,7 @@ export function PrayerWallSection() {
 
         {/* Prayer Cards */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {prayers.filter(p => p.isPublic).map((prayer, index) => (
+          {publicPrayers.map((prayer, index) => (
             <motion.div
               key={prayer.id}
               initial={{ opacity: 0, y: 20 }}
@@ -257,6 +275,13 @@ export function PrayerWallSection() {
             </motion.div>
           ))}
         </div>
+
+        {publicPrayers.length === 0 && (
+          <div className="text-center py-12">
+            <Heart className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500">Nenhum pedido de oração ainda. Seja o primeiro!</p>
+          </div>
+        )}
       </div>
     </section>
   );
