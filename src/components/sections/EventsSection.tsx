@@ -5,7 +5,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useData, Event } from '../../contexts/DataContext';
 
 export function EventsSection() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { events } = useData();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [addedEvents, setAddedEvents] = useState<string[]>([]);
@@ -25,14 +25,31 @@ export function EventsSection() {
     const startDate = new Date(`${event.date}T${event.time}`);
     const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
     
-    const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${startDate.toISOString().replace(/[-:]/g, '').replace(/\\.\\d{3}/, '')}/${endDate.toISOString().replace(/[-:]/g, '').replace(/\\.\\d{3}/, '')}&details=${encodeURIComponent(event.description + '\\n\\nPregador: ' + event.pastorName + '\\nLouvor: ' + event.singerName)}&location=${encodeURIComponent(event.location)}`;
+    const preacherLabel = language === 'en' ? 'Preacher' : language === 'es' ? 'Predicador' : 'Pregador';
+    const worshipLabel = language === 'en' ? 'Worship' : language === 'es' ? 'Alabanza' : 'Louvor';
+    
+    const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${startDate.toISOString().replace(/[-:]/g, '').replace(/\\.\\d{3}/, '')}/${endDate.toISOString().replace(/[-:]/g, '').replace(/\\.\\d{3}/, '')}&details=${encodeURIComponent(event.description + '\n\n' + preacherLabel + ': ' + event.pastorName + '\n' + worshipLabel + ': ' + event.singerName)}&location=${encodeURIComponent(event.location)}`;
     
     window.open(googleCalendarUrl, '_blank');
     setAddedEvents([...addedEvents, event.id]);
   };
 
-  const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-  const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  // Translated month names
+  const monthNames: Record<string, string[]> = {
+    pt: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
+    en: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+    es: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+  };
+
+  // Translated day names
+  const dayNames: Record<string, string[]> = {
+    pt: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'],
+    en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    es: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+  };
+
+  const currentMonthNames = monthNames[language] || monthNames.pt;
+  const currentDayNames = dayNames[language] || dayNames.pt;
 
   // Get upcoming scheduled events
   const upcomingEvents = events
@@ -51,13 +68,13 @@ export function EventsSection() {
           className="text-center mb-12"
         >
           <span className="inline-block px-4 py-2 rounded-full bg-orange-100 text-orange-600 text-sm font-medium mb-4">
-            {t('events')}
+            {t('events.title')}
           </span>
           <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
-            {t('upcomingEvents')}
+            {t('events.upcoming')}
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Participe dos nossos eventos e fortaleça sua fé em comunidade.
+            {t('events.subtitle')}
           </p>
         </motion.div>
 
@@ -79,7 +96,7 @@ export function EventsSection() {
                   <ChevronLeft className="w-5 h-5" />
                 </button>
                 <h3 className="text-xl font-bold text-gray-900">
-                  {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+                  {currentMonthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
                 </h3>
                 <button
                   onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
@@ -91,7 +108,7 @@ export function EventsSection() {
 
               {/* Day Headers */}
               <div className="grid grid-cols-7 gap-1 mb-2">
-                {dayNames.map(day => (
+                {currentDayNames.map((day: string) => (
                   <div key={day} className="text-center text-sm font-medium text-gray-500 py-2">
                     {day}
                   </div>
@@ -138,11 +155,11 @@ export function EventsSection() {
             viewport={{ once: true }}
             className="lg:col-span-2 space-y-4"
           >
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Próximos Eventos</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-4">{t('events.upcoming')}</h3>
             
             {upcomingEvents.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                Nenhum evento agendado
+                {t('events.noEvents')}
               </div>
             ) : (
               upcomingEvents.map((event, index) => (
@@ -166,7 +183,7 @@ export function EventsSection() {
                     {/* Date Badge */}
                     <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-orange-500 to-blue-600 rounded-xl flex flex-col items-center justify-center text-white">
                       <span className="text-lg font-bold">{new Date(event.date).getDate()}</span>
-                      <span className="text-xs">{monthNames[new Date(event.date).getMonth()].slice(0, 3)}</span>
+                      <span className="text-xs">{currentMonthNames[new Date(event.date).getMonth()].slice(0, 3)}</span>
                     </div>
                     
                     <div className="flex-1 min-w-0">
@@ -211,12 +228,12 @@ export function EventsSection() {
                         {addedEvents.includes(event.id) ? (
                           <>
                             <Check className="w-3 h-3" />
-                            Adicionado
+                            {t('events.addedToCalendar')}
                           </>
                         ) : (
                           <>
                             <Plus className="w-3 h-3" />
-                            {t('addToCalendar')}
+                            {t('events.addToCalendar')}
                           </>
                         )}
                       </motion.button>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { DataProvider } from './contexts/DataContext';
-import { Header } from './components/Header';
+import Header from './components/Header';
 import { Footer } from './components/Footer';
 import { VersePopup } from './components/VersePopup';
 import { FloatingWidgets } from './components/FloatingWidgets';
@@ -21,14 +21,16 @@ import { AdminPanel } from './components/AdminPanel';
 
 type ViewType = 'public' | 'member' | 'admin';
 
+interface User {
+  username: string;
+  role: string;
+}
+
 export function App() {
   const [showVersePopup, setShowVersePopup] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [currentSection, setCurrentSection] = useState('home');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [currentView, setCurrentView] = useState<ViewType>('public');
-  const [memberName, setMemberName] = useState('');
+  const [user, setUser] = useState<User | null>(null);
   
   const sectionRefs = {
     home: useRef<HTMLDivElement>(null),
@@ -55,68 +57,22 @@ export function App() {
     }
   }, []);
 
-  // Handle navigation
-  const handleNavigate = (section: string) => {
-    if (currentView !== 'public') {
-      setCurrentView('public');
-    }
-    
-    setCurrentSection(section);
-    
-    const ref = sectionRefs[section as keyof typeof sectionRefs];
-    if (ref?.current) {
-      const headerHeight = 80;
-      const top = ref.current.offsetTop - headerHeight;
-      window.scrollTo({ top, behavior: 'smooth' });
-    }
-  };
-
   // Handle login
-  const handleLogin = (admin: boolean) => {
-    setIsLoggedIn(true);
-    setIsAdmin(admin);
-    setMemberName(admin ? 'Administrador' : 'Membro');
-    setCurrentView(admin ? 'admin' : 'member');
+  const handleLogin = (isAdmin: boolean) => {
+    const newUser = {
+      username: isAdmin ? 'Admin' : 'Membro',
+      role: isAdmin ? 'admin' : 'member'
+    };
+    setUser(newUser);
+    setCurrentView(isAdmin ? 'admin' : 'member');
+    setShowLoginModal(false);
   };
 
   // Handle logout
   const handleLogout = () => {
-    setIsLoggedIn(false);
-    setIsAdmin(false);
-    setMemberName('');
+    setUser(null);
     setCurrentView('public');
   };
-
-  // Handle login button click
-  const handleLoginClick = () => {
-    if (isLoggedIn) {
-      setCurrentView(isAdmin ? 'admin' : 'member');
-    } else {
-      setShowLoginModal(true);
-    }
-  };
-
-  // Track scroll position
-  useEffect(() => {
-    const handleScroll = () => {
-      if (currentView !== 'public') return;
-      
-      const scrollPosition = window.scrollY + 100;
-      
-      for (const [section, ref] of Object.entries(sectionRefs)) {
-        if (ref.current) {
-          const { offsetTop, offsetHeight } = ref.current;
-          if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
-            setCurrentSection(section);
-            break;
-          }
-        }
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [currentView]);
 
   return (
     <LanguageProvider>
@@ -124,56 +80,59 @@ export function App() {
         <div className="min-h-screen bg-white" style={{ fontFamily: "'Inter', sans-serif" }}>
           {/* Header - Always visible */}
           <Header
-            onNavigate={handleNavigate}
-            currentSection={currentSection}
-            isLoggedIn={isLoggedIn}
-            onLogin={handleLoginClick}
-            isAdmin={isAdmin}
+            user={user}
+            onLoginClick={() => setShowLoginModal(true)}
+            onLogout={handleLogout}
+            onMemberArea={() => setCurrentView('member')}
+            onAdminPanel={() => setCurrentView('admin')}
           />
 
           {/* Main Content */}
           {currentView === 'public' && (
             <>
-              <div ref={sectionRefs.home}>
-                <HeroSection onNavigate={handleNavigate} />
+              <div id="home" ref={sectionRefs.home}>
+                <HeroSection />
               </div>
-              <div ref={sectionRefs.about}>
+              <div id="about" ref={sectionRefs.about}>
                 <AboutSection />
               </div>
-              <div ref={sectionRefs.events}>
+              <div id="events" ref={sectionRefs.events}>
                 <EventsSection />
               </div>
-              <div ref={sectionRefs.prayer}>
+              <div id="prayer" ref={sectionRefs.prayer}>
                 <PrayerWallSection />
               </div>
-              <div ref={sectionRefs.media}>
+              <div id="media" ref={sectionRefs.media}>
                 <MediaSection />
               </div>
-              <div ref={sectionRefs.gallery}>
+              <div id="gallery" ref={sectionRefs.gallery}>
                 <GallerySection />
               </div>
-              <div ref={sectionRefs.quiz}>
+              <div id="quiz" ref={sectionRefs.quiz}>
                 <QuizSection />
               </div>
-              <div ref={sectionRefs.donations}>
+              <div id="donations" ref={sectionRefs.donations}>
                 <DonationsSection />
               </div>
-              <div ref={sectionRefs.cells}>
+              <div id="cells" ref={sectionRefs.cells}>
                 <CellsSection />
               </div>
-              <div ref={sectionRefs.contact}>
+              <div id="contact" ref={sectionRefs.contact}>
                 <ContactSection />
               </div>
-              <Footer onNavigate={handleNavigate} />
+              <Footer />
             </>
           )}
 
-          {currentView === 'member' && (
-            <MemberArea onLogout={handleLogout} memberName={memberName} />
+          {currentView === 'member' && user && (
+            <MemberArea 
+              onBack={() => setCurrentView('public')} 
+              username={user.username} 
+            />
           )}
 
           {currentView === 'admin' && (
-            <AdminPanel onLogout={handleLogout} />
+            <AdminPanel onBack={() => setCurrentView('public')} />
           )}
 
           {/* Floating Widgets - Only on public view */}

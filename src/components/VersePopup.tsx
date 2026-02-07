@@ -3,18 +3,41 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, BookOpen, Heart } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
-const verses = [
-  { text: "Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito, para que todo aquele que nele crê não pereça, mas tenha a vida eterna.", ref: "João 3:16" },
-  { text: "O Senhor é o meu pastor; nada me faltará.", ref: "Salmos 23:1" },
-  { text: "Confie no Senhor de todo o seu coração e não se apoie na sua própria inteligência.", ref: "Provérbios 3:5" },
-  { text: "Posso todas as coisas naquele que me fortalece.", ref: "Filipenses 4:13" },
-  { text: "Porque eu bem sei os pensamentos que tenho a vosso respeito, diz o Senhor; pensamentos de paz e não de mal, para vos dar o fim que esperais.", ref: "Jeremias 29:11" },
-  { text: "O amor é paciente, o amor é bondoso. Não inveja, não se vangloria, não se orgulha.", ref: "1 Coríntios 13:4" },
-  { text: "Buscai primeiro o Reino de Deus e a sua justiça, e todas essas coisas vos serão acrescentadas.", ref: "Mateus 6:33" },
-  { text: "Tudo posso naquele que me fortalece.", ref: "Filipenses 4:13" },
-  { text: "O Senhor é a minha luz e a minha salvação; a quem temerei?", ref: "Salmos 27:1" },
-  { text: "Entrega o teu caminho ao Senhor; confia nele, e ele tudo fará.", ref: "Salmos 37:5" },
-];
+const versesData = {
+  pt: [
+    { text: "Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito, para que todo aquele que nele crê não pereça, mas tenha a vida eterna.", ref: "João 3:16" },
+    { text: "O Senhor é o meu pastor; nada me faltará.", ref: "Salmos 23:1" },
+    { text: "Confie no Senhor de todo o seu coração e não se apoie na sua própria inteligência.", ref: "Provérbios 3:5" },
+    { text: "Posso todas as coisas naquele que me fortalece.", ref: "Filipenses 4:13" },
+    { text: "Porque eu bem sei os pensamentos que tenho a vosso respeito, diz o Senhor; pensamentos de paz e não de mal, para vos dar o fim que esperais.", ref: "Jeremias 29:11" },
+    { text: "O amor é paciente, o amor é bondoso. Não inveja, não se vangloria, não se orgulha.", ref: "1 Coríntios 13:4" },
+    { text: "Buscai primeiro o Reino de Deus e a sua justiça, e todas essas coisas vos serão acrescentadas.", ref: "Mateus 6:33" },
+    { text: "O Senhor é a minha luz e a minha salvação; a quem temerei?", ref: "Salmos 27:1" },
+    { text: "Entrega o teu caminho ao Senhor; confia nele, e ele tudo fará.", ref: "Salmos 37:5" },
+  ],
+  en: [
+    { text: "For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.", ref: "John 3:16" },
+    { text: "The Lord is my shepherd; I shall not want.", ref: "Psalm 23:1" },
+    { text: "Trust in the Lord with all your heart and lean not on your own understanding.", ref: "Proverbs 3:5" },
+    { text: "I can do all things through Christ who strengthens me.", ref: "Philippians 4:13" },
+    { text: "For I know the plans I have for you, declares the Lord, plans to prosper you and not to harm you.", ref: "Jeremiah 29:11" },
+    { text: "Love is patient, love is kind. It does not envy, it does not boast, it is not proud.", ref: "1 Corinthians 13:4" },
+    { text: "But seek first his kingdom and his righteousness, and all these things will be given to you as well.", ref: "Matthew 6:33" },
+    { text: "The Lord is my light and my salvation—whom shall I fear?", ref: "Psalm 27:1" },
+    { text: "Commit your way to the Lord; trust in him and he will do this.", ref: "Psalm 37:5" },
+  ],
+  es: [
+    { text: "Porque de tal manera amó Dios al mundo, que ha dado a su Hijo unigénito, para que todo aquel que en él cree, no se pierda, mas tenga vida eterna.", ref: "Juan 3:16" },
+    { text: "El Señor es mi pastor; nada me faltará.", ref: "Salmos 23:1" },
+    { text: "Confía en el Señor con todo tu corazón, y no te apoyes en tu propio entendimiento.", ref: "Proverbios 3:5" },
+    { text: "Todo lo puedo en Cristo que me fortalece.", ref: "Filipenses 4:13" },
+    { text: "Porque yo sé los pensamientos que tengo acerca de vosotros, dice el Señor, pensamientos de paz, y no de mal.", ref: "Jeremías 29:11" },
+    { text: "El amor es paciente, es bondadoso. El amor no es envidioso ni jactancioso ni orgulloso.", ref: "1 Corintios 13:4" },
+    { text: "Mas buscad primeramente el reino de Dios y su justicia, y todas estas cosas os serán añadidas.", ref: "Mateo 6:33" },
+    { text: "El Señor es mi luz y mi salvación; ¿de quién temeré?", ref: "Salmos 27:1" },
+    { text: "Encomienda al Señor tu camino; confía en él, y él actuará.", ref: "Salmos 37:5" },
+  ],
+};
 
 interface VersePopupProps {
   isOpen: boolean;
@@ -22,19 +45,20 @@ interface VersePopupProps {
 }
 
 export function VersePopup({ isOpen, onClose }: VersePopupProps) {
-  const [verse, setVerse] = useState(verses[0]);
+  const { language, t } = useLanguage();
+  const [verse, setVerse] = useState({ text: '', ref: '' });
   const [amenCount, setAmenCount] = useState(0);
   const [hasClickedAmen, setHasClickedAmen] = useState(false);
-  const { t } = useLanguage();
 
   useEffect(() => {
     if (isOpen) {
+      const verses = versesData[language];
       const randomVerse = verses[Math.floor(Math.random() * verses.length)];
       setVerse(randomVerse);
       setAmenCount(Math.floor(Math.random() * 500) + 100);
       setHasClickedAmen(false);
     }
-  }, [isOpen]);
+  }, [isOpen, language]);
 
   const handleAmen = () => {
     if (!hasClickedAmen) {
@@ -126,7 +150,7 @@ export function VersePopup({ isOpen, onClose }: VersePopupProps) {
                   >
                     <span className="flex items-center gap-2">
                       <Heart className={`w-5 h-5 ${hasClickedAmen ? 'fill-current' : ''}`} />
-                      {hasClickedAmen ? '✓ Amém!' : t('amen')}
+                      {hasClickedAmen ? `✓ ${t('amen')}!` : t('amen')}
                     </span>
                   </motion.button>
 
@@ -137,7 +161,7 @@ export function VersePopup({ isOpen, onClose }: VersePopupProps) {
                     className="text-sm text-gray-500 flex items-center gap-2"
                   >
                     <Heart className="w-4 h-4 text-red-500 fill-red-500" />
-                    <span><strong>{amenCount.toLocaleString()}</strong> pessoas disseram Amém</span>
+                    <span><strong>{amenCount.toLocaleString()}</strong> {t('peopleSaidAmen')}</span>
                   </motion.p>
                 </div>
               </div>

@@ -8,13 +8,60 @@ const WHATSAPP_NUMBER = '351965838589';
 const WHATSAPP_NAME = 'Mayckon';
 
 export function FloatingWidgets() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { events } = useData();
   const [showNotification, setShowNotification] = useState(false);
   const [showPresenceForm, setShowPresenceForm] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
   const [submitted, setSubmitted] = useState(false);
   const [consent, setConsent] = useState(false);
+
+  // Mensagens do WhatsApp traduzidas
+  const whatsappMessages = {
+    pt: {
+      greeting: `Olá ${WHATSAPP_NAME}! Gostaria de falar com alguém da Igreja Conectada.`,
+      presence: (service: string, date: string, time: string, location: string, name: string, email: string, phone: string) => 
+        `Olá ${WHATSAPP_NAME}! Gostaria de confirmar minha presença no ${service}.\n\n` +
+        `📅 Data: ${date}\n` +
+        `⏰ Horário: ${time}\n` +
+        `📍 Local: ${location}\n\n` +
+        `Meus dados:\n` +
+        `Nome: ${name}\n` +
+        `Email: ${email}\n` +
+        `Telefone: ${phone}`
+    },
+    en: {
+      greeting: `Hello ${WHATSAPP_NAME}! I would like to speak with someone from Connected Church.`,
+      presence: (service: string, date: string, time: string, location: string, name: string, email: string, phone: string) => 
+        `Hello ${WHATSAPP_NAME}! I would like to confirm my attendance at ${service}.\n\n` +
+        `📅 Date: ${date}\n` +
+        `⏰ Time: ${time}\n` +
+        `📍 Location: ${location}\n\n` +
+        `My details:\n` +
+        `Name: ${name}\n` +
+        `Email: ${email}\n` +
+        `Phone: ${phone}`
+    },
+    es: {
+      greeting: `¡Hola ${WHATSAPP_NAME}! Me gustaría hablar con alguien de la Iglesia Conectada.`,
+      presence: (service: string, date: string, time: string, location: string, name: string, email: string, phone: string) => 
+        `¡Hola ${WHATSAPP_NAME}! Me gustaría confirmar mi asistencia en ${service}.\n\n` +
+        `📅 Fecha: ${date}\n` +
+        `⏰ Hora: ${time}\n` +
+        `📍 Ubicación: ${location}\n\n` +
+        `Mis datos:\n` +
+        `Nombre: ${name}\n` +
+        `Email: ${email}\n` +
+        `Teléfono: ${phone}`
+    }
+  };
+
+  // Formatos de data por idioma
+  const dateLocales = {
+    pt: 'pt-BR',
+    en: 'en-US',
+    es: 'es-ES'
+  };
 
   // Get next scheduled event
   const nextEvent = events
@@ -23,15 +70,15 @@ export function FloatingWidgets() {
 
   const nextService = nextEvent ? {
     title: nextEvent.title,
-    date: new Date(nextEvent.date).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'short' }),
+    date: new Date(nextEvent.date).toLocaleDateString(dateLocales[language], { weekday: 'long', day: 'numeric', month: 'short' }),
     time: nextEvent.time,
     location: nextEvent.location,
     pastorName: nextEvent.pastorName
   } : {
-    title: 'Culto de Celebração',
-    date: 'Domingo, 19 Jan',
+    title: language === 'pt' ? 'Culto de Domingo' : language === 'en' ? 'Sunday Service' : 'Culto del Domingo',
+    date: `${t('events.sunday')}, 19 Jan`,
     time: '10:00',
-    location: 'Templo Principal',
+    location: language === 'pt' ? 'Templo Principal' : language === 'en' ? 'Main Temple' : 'Templo Principal',
     pastorName: 'Pr. João Silva'
   };
 
@@ -39,16 +86,17 @@ export function FloatingWidgets() {
     e.preventDefault();
     if (!consent) return;
     
-    // WhatsApp integration with correct number
+    // WhatsApp integration with translated message
     const message = encodeURIComponent(
-      `Olá ${WHATSAPP_NAME}! Gostaria de confirmar minha presença no ${nextService.title}.\n\n` +
-      `📅 Data: ${nextService.date}\n` +
-      `⏰ Horário: ${nextService.time}\n` +
-      `📍 Local: ${nextService.location}\n\n` +
-      `Meus dados:\n` +
-      `Nome: ${formData.name}\n` +
-      `Email: ${formData.email}\n` +
-      `Telefone: ${formData.phone}`
+      whatsappMessages[language].presence(
+        nextService.title,
+        nextService.date,
+        nextService.time,
+        nextService.location,
+        formData.name,
+        formData.email,
+        formData.phone
+      )
     );
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
     
@@ -63,7 +111,7 @@ export function FloatingWidgets() {
   };
 
   const openWhatsApp = () => {
-    const message = encodeURIComponent(`Olá ${WHATSAPP_NAME}! Gostaria de falar com alguém da Igreja Conectada.`);
+    const message = encodeURIComponent(whatsappMessages[language].greeting);
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
   };
 
@@ -88,7 +136,7 @@ export function FloatingWidgets() {
             whileHover={{ opacity: 1, x: 0 }}
             className="absolute left-full ml-3 px-4 py-2 bg-white rounded-lg shadow-lg whitespace-nowrap"
           >
-            <p className="text-sm font-medium text-gray-900">{t('talkToUs')}</p>
+            <p className="text-sm font-medium text-gray-900">{t('widget.talkToUs')}</p>
             <p className="text-xs text-gray-500">{WHATSAPP_NAME}</p>
           </motion.div>
         </div>
@@ -134,7 +182,7 @@ export function FloatingWidgets() {
               {/* Header */}
               <div className="bg-gradient-to-r from-orange-500 to-blue-600 p-4 text-white">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-bold">{t('nextService')}</h3>
+                  <h3 className="font-bold">{t('widget.nextService')}</h3>
                   <button 
                     onClick={() => setShowNotification(false)}
                     className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30"
@@ -181,7 +229,7 @@ export function FloatingWidgets() {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
-                      {t('confirmPresence')}
+                      {t('widget.confirmPresence')}
                     </motion.button>
                   </>
                 ) : submitted ? (
@@ -193,8 +241,8 @@ export function FloatingWidgets() {
                     <div className="w-16 h-16 mx-auto mb-3 bg-green-100 rounded-full flex items-center justify-center">
                       <Check className="w-8 h-8 text-green-500" />
                     </div>
-                    <p className="font-bold text-gray-900">Presença Confirmada!</p>
-                    <p className="text-sm text-gray-500">Enviado para o WhatsApp</p>
+                    <p className="font-bold text-gray-900">{t('widget.confirmed')}</p>
+                    <p className="text-sm text-gray-500">{t('widget.seeYou')}</p>
                   </motion.div>
                 ) : (
                   <motion.form
@@ -208,14 +256,14 @@ export function FloatingWidgets() {
                       onClick={() => setShowPresenceForm(false)}
                       className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
                     >
-                      ← Voltar
+                      ← {t('common.back')}
                     </button>
                     
                     <input
                       type="text"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder={t('name')}
+                      placeholder={t('widget.yourName')}
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-500"
                       required
                     />
@@ -223,7 +271,7 @@ export function FloatingWidgets() {
                       type="email"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder={t('email')}
+                      placeholder={t('widget.yourEmail')}
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-500"
                       required
                     />
@@ -231,7 +279,7 @@ export function FloatingWidgets() {
                       type="tel"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      placeholder={t('phone')}
+                      placeholder={t('widget.yourPhone')}
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-500"
                       required
                     />
@@ -244,7 +292,7 @@ export function FloatingWidgets() {
                         className="mt-0.5 w-4 h-4 text-orange-500 rounded"
                       />
                       <span className="text-xs text-gray-500">
-                        {t('privacyConsent')}
+                        {t('prayer.consent')}
                       </span>
                     </label>
                     
@@ -254,7 +302,7 @@ export function FloatingWidgets() {
                       className="w-full py-2 bg-green-500 text-white font-bold rounded-lg flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       <Send className="w-4 h-4" />
-                      Enviar via WhatsApp
+                      {t('widget.chatWhatsApp')}
                     </button>
                   </motion.form>
                 )}

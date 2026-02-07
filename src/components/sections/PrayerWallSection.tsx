@@ -56,13 +56,13 @@ export function PrayerWallSection() {
           className="text-center mb-12"
         >
           <span className="inline-block px-4 py-2 rounded-full bg-blue-100 text-blue-600 text-sm font-medium mb-4">
-            {t('prayerWall')}
+            {t('prayer.title')}
           </span>
           <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
-            Mural de <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-orange-500">Oração</span>
+            {t('prayer.leaveRequest').split(' ')[0]} <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-orange-500">{t('prayer.leaveRequest').split(' ').slice(1).join(' ')}</span>
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-6">
-            Compartilhe seus pedidos e ore pelos irmãos. Juntos, somos mais fortes!
+            {t('prayer.subtitle')}
           </p>
           
           {/* Stats */}
@@ -74,7 +74,7 @@ export function PrayerWallSection() {
               <Users className="w-6 h-6 text-orange-500" />
             </motion.div>
             <span className="text-2xl font-bold text-gray-900">{totalPraying}</span>
-            <span className="text-gray-500">{t('praying')}</span>
+            <span className="text-gray-500">{t('prayer.peoplePraying')}</span>
           </div>
         </motion.div>
 
@@ -99,7 +99,7 @@ export function PrayerWallSection() {
               >
                 <div className="flex items-center justify-center gap-3">
                   <Heart className="w-6 h-6" />
-                  <span className="text-lg">{t('prayerRequest')}</span>
+                  <span className="text-lg">{t('prayer.leaveRequest')}</span>
                 </div>
               </motion.button>
             ) : submitted ? (
@@ -113,11 +113,11 @@ export function PrayerWallSection() {
                 <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
                   <Check className="w-8 h-8 text-green-500" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Pedido Enviado!</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">{t('prayer.requestSent')}</h3>
                 <p className="text-gray-600">
                   {newPrayer.isPublic 
-                    ? 'Seu pedido foi adicionado ao mural de oração.' 
-                    : 'Seu pedido privado foi enviado para análise da liderança.'}
+                    ? t('prayer.requestSentPublic')
+                    : t('prayer.requestSentPrivate')}
                 </p>
               </motion.div>
             ) : (
@@ -129,34 +129,34 @@ export function PrayerWallSection() {
                 onSubmit={handleSubmit}
                 className="w-full max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-8"
               >
-                <h3 className="text-xl font-bold text-gray-900 mb-6">{t('prayerRequest')}</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-6">{t('prayer.leaveRequest')}</h3>
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('name')}</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('prayer.name')}</label>
                     <input
                       type="text"
                       value={newPrayer.name}
                       onChange={(e) => setNewPrayer({ ...newPrayer, name: e.target.value })}
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                      placeholder="Seu nome"
+                      placeholder={t('prayer.namePlaceholder')}
                       required
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Pedido de Oração</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('prayer.request')}</label>
                     <textarea
                       value={newPrayer.message}
                       onChange={(e) => setNewPrayer({ ...newPrayer, message: e.target.value })}
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
                       rows={4}
-                      placeholder="Compartilhe seu pedido..."
+                      placeholder={t('prayer.requestPlaceholder')}
                       required
                     />
                   </div>
                   
-                  <div className="flex items-center gap-4">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="radio"
@@ -166,8 +166,8 @@ export function PrayerWallSection() {
                         className="w-4 h-4 text-orange-500"
                       />
                       <Globe className="w-4 h-4 text-gray-500" />
-                      <span className="text-sm text-gray-700">{t('public')}</span>
-                      <span className="text-xs text-gray-400">(Aparece no mural)</span>
+                      <span className="text-sm text-gray-700">{t('prayer.public')}</span>
+                      <span className="text-xs text-gray-400">({t('prayer.publicDesc')})</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
@@ -178,8 +178,8 @@ export function PrayerWallSection() {
                         className="w-4 h-4 text-orange-500"
                       />
                       <Lock className="w-4 h-4 text-gray-500" />
-                      <span className="text-sm text-gray-700">{t('private')}</span>
-                      <span className="text-xs text-gray-400">(Só a liderança vê)</span>
+                      <span className="text-sm text-gray-700">{t('prayer.private')}</span>
+                      <span className="text-xs text-gray-400">({t('prayer.privateDesc')})</span>
                     </label>
                   </div>
 
@@ -192,7 +192,7 @@ export function PrayerWallSection() {
                       className="mt-1 w-4 h-4 text-orange-500 rounded"
                     />
                     <span className="text-sm text-gray-600">
-                      {t('privacyConsent')}. Seus dados serão tratados conforme a LGPD/RGPD.
+                      {t('prayer.consent')}
                     </span>
                   </label>
                   
@@ -202,7 +202,7 @@ export function PrayerWallSection() {
                       onClick={() => setShowForm(false)}
                       className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50"
                     >
-                      Cancelar
+                      {t('common.cancel')}
                     </button>
                     <button
                       type="submit"
@@ -210,7 +210,7 @@ export function PrayerWallSection() {
                       className="flex-1 px-6 py-3 bg-gradient-to-r from-orange-500 to-blue-600 text-white font-medium rounded-xl hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                       <Send className="w-4 h-4" />
-                      {t('submit')}
+                      {t('prayer.send')}
                     </button>
                   </div>
                 </div>
@@ -243,7 +243,7 @@ export function PrayerWallSection() {
                   <div>
                     <p className="font-semibold text-gray-900">{prayer.name}</p>
                     <p className="text-xs text-gray-500">
-                      {new Date(prayer.createdAt).toLocaleDateString('pt-BR')}
+                      {new Date(prayer.createdAt).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
@@ -253,7 +253,7 @@ export function PrayerWallSection() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-sm text-gray-500">
                     <Users className="w-4 h-4" />
-                    <span>{prayer.prayingCount} {t('praying')}</span>
+                    <span>{prayer.prayingCount} {t('prayer.peoplePraying')}</span>
                   </div>
                   
                   <motion.button
@@ -268,7 +268,7 @@ export function PrayerWallSection() {
                     whileTap={{ scale: 0.95 }}
                   >
                     <Heart className={`w-4 h-4 ${prayedFor.includes(prayer.id) ? 'fill-current' : ''}`} />
-                    {prayedFor.includes(prayer.id) ? 'Orando' : t('prayForThis')}
+                    {prayedFor.includes(prayer.id) ? t('prayer.praying') : t('prayer.joinPrayer')}
                   </motion.button>
                 </div>
               </div>
@@ -279,7 +279,7 @@ export function PrayerWallSection() {
         {publicPrayers.length === 0 && (
           <div className="text-center py-12">
             <Heart className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">Nenhum pedido de oração ainda. Seja o primeiro!</p>
+            <p className="text-gray-500">{t('prayer.noRequests')}</p>
           </div>
         )}
       </div>

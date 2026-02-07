@@ -3,13 +3,59 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Igreja Conectada - Uma comunidade de fé conectada pelo amor de Deus. Junte-se a nós!">
+    <meta name="keywords" content="igreja, conectada, fé, comunidade, cristo, portugal, lisboa">
     <title>Igreja Conectada - Fé que Transforma</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      /* Loading animation */
+      .loading-screen {
+        position: fixed;
+        inset: 0;
+        background: linear-gradient(135deg, #f97316 0%, #3b82f6 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        transition: opacity 0.5s ease;
+      }
+      .loading-screen.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .loading-logo {
+        width: 80px;
+        height: 80px;
+        background: white;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        font-weight: bold;
+        color: #f97316;
+        animation: pulse 1.5s infinite;
+      }
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+      }
+    </style>
   </head>
   <body>
+    <div id="loading" class="loading-screen">
+      <div class="loading-logo">IC</div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          document.getElementById('loading').classList.add('hidden');
+        }, 500);
+      });
+    </script>
   </body>
 </html>

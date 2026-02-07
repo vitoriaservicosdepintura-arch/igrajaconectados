@@ -1,25 +1,51 @@
 import { motion } from 'framer-motion';
-import { Heart, Users, BookOpen, Globe, Target, Award } from 'lucide-react';
+import { FiHeart, FiUsers, FiBook, FiGlobe, FiTarget, FiAward } from 'react-icons/fi';
 import { useLanguage } from '../../contexts/LanguageContext';
 
 export function AboutSection() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const values = [
-    { icon: Heart, title: 'Amor', description: 'Amamos a Deus e ao próximo como a nós mesmos' },
-    { icon: Users, title: 'Comunidade', description: 'Somos uma família unida pela fé' },
-    { icon: BookOpen, title: 'Palavra', description: 'A Bíblia é nosso guia e fundamento' },
-    { icon: Globe, title: 'Missões', description: 'Levamos o evangelho a todas as nações' },
-    { icon: Target, title: 'Propósito', description: 'Cada membro tem um chamado especial' },
-    { icon: Award, title: 'Excelência', description: 'Servimos a Deus com o nosso melhor' },
+    { 
+      icon: FiHeart, 
+      title: language === 'en' ? 'Love' : language === 'es' ? 'Amor' : 'Amor', 
+      description: language === 'en' ? 'We love God and neighbor as ourselves' : language === 'es' ? 'Amamos a Dios y al prójimo como a nosotros mismos' : 'Amamos a Deus e ao próximo como a nós mesmos'
+    },
+    { 
+      icon: FiUsers, 
+      title: language === 'en' ? 'Community' : language === 'es' ? 'Comunidad' : 'Comunidade', 
+      description: language === 'en' ? 'We are a family united by faith' : language === 'es' ? 'Somos una familia unida por la fe' : 'Somos uma família unida pela fé'
+    },
+    { 
+      icon: FiBook, 
+      title: language === 'en' ? 'Word' : language === 'es' ? 'Palabra' : 'Palavra', 
+      description: language === 'en' ? 'The Bible is our guide and foundation' : language === 'es' ? 'La Biblia es nuestra guía y fundamento' : 'A Bíblia é nosso guia e fundamento'
+    },
+    { 
+      icon: FiGlobe, 
+      title: language === 'en' ? 'Missions' : language === 'es' ? 'Misiones' : 'Missões', 
+      description: language === 'en' ? 'We bring the gospel to all nations' : language === 'es' ? 'Llevamos el evangelio a todas las naciones' : 'Levamos o evangelho a todas as nações'
+    },
+    { 
+      icon: FiTarget, 
+      title: language === 'en' ? 'Purpose' : language === 'es' ? 'Propósito' : 'Propósito', 
+      description: language === 'en' ? 'Every member has a special calling' : language === 'es' ? 'Cada miembro tiene un llamado especial' : 'Cada membro tem um chamado especial'
+    },
+    { 
+      icon: FiAward, 
+      title: language === 'en' ? 'Excellence' : language === 'es' ? 'Excelencia' : 'Excelência', 
+      description: language === 'en' ? 'We serve God with our best' : language === 'es' ? 'Servimos a Dios con lo mejor de nosotros' : 'Servimos a Deus com o nosso melhor'
+    },
   ];
 
   const team = [
-    { name: 'Pr. João Silva', role: 'Pastor Presidente', image: '👨‍💼' },
-    { name: 'Pra. Maria Silva', role: 'Pastora', image: '👩‍💼' },
-    { name: 'Ev. Pedro Santos', role: 'Evangelista', image: '👨‍🏫' },
-    { name: 'Dc. Ana Costa', role: 'Diaconisa', image: '👩‍🏫' },
+    { name: 'Pr. João Silva', role: t('about.pastor'), image: '👨‍💼' },
+    { name: 'Pra. Maria Silva', role: language === 'en' ? 'Pastor' : language === 'es' ? 'Pastora' : 'Pastora', image: '👩‍💼' },
+    { name: 'Ev. Pedro Santos', role: language === 'en' ? 'Evangelist' : language === 'es' ? 'Evangelista' : 'Evangelista', image: '👨‍🏫' },
+    { name: 'Dc. Ana Costa', role: language === 'en' ? 'Deaconess' : language === 'es' ? 'Diaconisa' : 'Diaconisa', image: '👩‍🏫' },
   ];
+
+  const churchName = language === 'en' ? 'Connected Church' : language === 'es' ? 'Iglesia Conectada' : 'Igreja Conectada';
 
   return (
     <section className="py-20 bg-white" id="about">
@@ -32,13 +58,14 @@ export function AboutSection() {
           className="text-center mb-16"
         >
           <span className="inline-block px-4 py-2 rounded-full bg-orange-100 text-orange-600 text-sm font-medium mb-4">
-            {t('aboutUs')}
+            {t('about.title')}
           </span>
           <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
-            Conheça a <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-blue-600">Igreja Conectada</span>
+            {language === 'en' ? 'Meet the ' : language === 'es' ? 'Conoce la ' : 'Conheça a '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-blue-600">{churchName}</span>
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Somos uma comunidade de fé, unida pelo amor de Cristo, comprometida em transformar vidas através do Evangelho.
+            {t('about.subtitle')}
           </p>
         </motion.div>
 
@@ -66,8 +93,12 @@ export function AboutSection() {
                   >
                     ⛪
                   </motion.div>
-                  <p className="text-2xl font-bold">Desde 2010</p>
-                  <p className="opacity-80">Transformando Vidas</p>
+                  <p className="text-2xl font-bold">
+                    {language === 'en' ? 'Since 2010' : language === 'es' ? 'Desde 2010' : 'Desde 2010'}
+                  </p>
+                  <p className="opacity-80">
+                    {language === 'en' ? 'Transforming Lives' : language === 'es' ? 'Transformando Vidas' : 'Transformando Vidas'}
+                  </p>
                 </div>
               </div>
               {/* 3D shadow layers */}
@@ -82,32 +113,25 @@ export function AboutSection() {
             viewport={{ once: true }}
           >
             <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
-              Nossa História
+              {t('about.history')}
             </h3>
             <div className="space-y-4 text-gray-600">
-              <p>
-                A Igreja Conectada nasceu em 2010, com um pequeno grupo de fiéis reunidos em uma sala de estar. O sonho era criar uma comunidade onde as pessoas pudessem experimentar o amor de Deus de forma autêntica e relevante.
-              </p>
-              <p>
-                Hoje, somos mais de 500 membros, com 25 células espalhadas pela cidade, alcançando pessoas de todas as idades e backgrounds. Nossa missão continua a mesma: conectar pessoas a Deus e umas às outras.
-              </p>
-              <p>
-                Acreditamos que a igreja deve ser um lugar de acolhimento, crescimento espiritual e transformação. Cada pessoa que entra por nossas portas é tratada como família.
-              </p>
+              <p>{t('about.historyText')}</p>
+              <p>{t('about.historyText2')}</p>
             </div>
 
             <div className="mt-8 grid grid-cols-3 gap-4">
               <div className="text-center p-4 bg-orange-50 rounded-xl">
                 <p className="text-2xl font-bold text-orange-600">14+</p>
-                <p className="text-sm text-gray-500">Anos de História</p>
+                <p className="text-sm text-gray-500">{t('hero.yearsMinistry')}</p>
               </div>
               <div className="text-center p-4 bg-blue-50 rounded-xl">
                 <p className="text-2xl font-bold text-blue-600">500+</p>
-                <p className="text-sm text-gray-500">Membros</p>
+                <p className="text-sm text-gray-500">{t('hero.members')}</p>
               </div>
               <div className="text-center p-4 bg-green-50 rounded-xl">
                 <p className="text-2xl font-bold text-green-600">25+</p>
-                <p className="text-sm text-gray-500">Células</p>
+                <p className="text-sm text-gray-500">{t('hero.cells')}</p>
               </div>
             </div>
           </motion.div>
@@ -121,7 +145,7 @@ export function AboutSection() {
           className="mb-20"
         >
           <h3 className="text-2xl md:text-3xl font-bold text-gray-900 text-center mb-12">
-            Nossos Valores
+            {t('about.values')}
           </h3>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {values.map((value, index) => (
@@ -155,7 +179,7 @@ export function AboutSection() {
           viewport={{ once: true }}
         >
           <h3 className="text-2xl md:text-3xl font-bold text-gray-900 text-center mb-12">
-            Nossa Liderança
+            {t('about.leadership')}
           </h3>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {team.map((member, index) => (

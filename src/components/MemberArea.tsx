@@ -1,10 +1,10 @@
 import { motion } from 'framer-motion';
-import { CreditCard, BookOpen, Award, Calendar, Download, LogOut, Heart } from 'lucide-react';
+import { FiCreditCard, FiBookOpen, FiAward, FiCalendar, FiDownload, FiArrowLeft, FiHeart, FiUser } from 'react-icons/fi';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface MemberAreaProps {
-  onLogout: () => void;
-  memberName: string;
+  onBack: () => void;
+  username: string;
 }
 
 const donations = [
@@ -25,17 +25,17 @@ const materials = [
   { id: '3', title: 'Atividades para Crianças', type: 'ZIP', date: '2025-01-19' },
 ];
 
-export function MemberArea({ onLogout, memberName }: MemberAreaProps) {
+export function MemberArea({ onBack, username }: MemberAreaProps) {
   const { t } = useLanguage();
 
   const stats = [
-    { label: 'Tempo como Membro', value: '2 anos', icon: Calendar },
-    { label: 'Total Doado', value: '€225', icon: Heart },
-    { label: 'Cursos Concluídos', value: '1', icon: Award },
+    { label: t('member.memberSince'), value: '2023', icon: FiCalendar },
+    { label: t('member.totalDonated'), value: '€225', icon: FiHeart },
+    { label: t('member.certificates'), value: '1', icon: FiAward },
   ];
 
   return (
-    <section className="py-20 bg-gray-50 min-h-screen">
+    <section className="py-20 bg-gray-50 min-h-screen pt-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
@@ -44,23 +44,22 @@ export function MemberArea({ onLogout, memberName }: MemberAreaProps) {
           className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8"
         >
           <div className="flex items-center gap-4">
+            <motion.button
+              onClick={onBack}
+              className="p-2 bg-white rounded-xl shadow-md hover:bg-gray-50 transition-colors"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <FiArrowLeft className="w-5 h-5 text-gray-600" />
+            </motion.button>
             <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-blue-600 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-              {memberName.charAt(0)}
+              <FiUser className="w-8 h-8" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Olá, {memberName}!</h1>
-              <p className="text-gray-500">Bem-vindo à sua área de membro</p>
+              <h1 className="text-2xl font-bold text-gray-900">{t('member.welcome')}, {username}!</h1>
+              <p className="text-gray-500">{t('member.title')}</p>
             </div>
           </div>
-          <motion.button
-            onClick={onLogout}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-colors"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <LogOut className="w-4 h-4" />
-            {t('logout')}
-          </motion.button>
         </motion.div>
 
         {/* Stats */}
@@ -88,25 +87,27 @@ export function MemberArea({ onLogout, memberName }: MemberAreaProps) {
             className="bg-white rounded-2xl shadow-lg p-6"
           >
             <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-              <CreditCard className="w-5 h-5 text-orange-500" />
-              Histórico de Doações
+              <FiCreditCard className="w-5 h-5 text-orange-500" />
+              {t('member.donationHistory')}
             </h2>
             <div className="space-y-3">
-              {donations.map((donation) => (
+              {donations.length > 0 ? donations.map((donation) => (
                 <div key={donation.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                   <div>
                     <p className="font-medium text-gray-900">{donation.project}</p>
-                    <p className="text-sm text-gray-500">{new Date(donation.date).toLocaleDateString('pt-BR')}</p>
+                    <p className="text-sm text-gray-500">{new Date(donation.date).toLocaleDateString()}</p>
                   </div>
                   <div className="text-right">
                     <p className="font-bold text-green-600">€{donation.amount}</p>
                     <button className="text-xs text-orange-500 hover:underline flex items-center gap-1">
-                      <Download className="w-3 h-3" />
-                      Recibo
+                      <FiDownload className="w-3 h-3" />
+                      {t('member.downloadReceipt')}
                     </button>
                   </div>
                 </div>
-              ))}
+              )) : (
+                <p className="text-gray-500 text-center py-8">{t('member.noDonations')}</p>
+              )}
             </div>
           </motion.div>
 
@@ -118,8 +119,8 @@ export function MemberArea({ onLogout, memberName }: MemberAreaProps) {
             className="bg-white rounded-2xl shadow-lg p-6"
           >
             <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-              <Award className="w-5 h-5 text-orange-500" />
-              Meus Cursos
+              <FiAward className="w-5 h-5 text-orange-500" />
+              {t('member.courses')}
             </h2>
             <div className="space-y-4">
               {courses.map((course) => (
@@ -128,7 +129,7 @@ export function MemberArea({ onLogout, memberName }: MemberAreaProps) {
                     <p className="font-medium text-gray-900">{course.name}</p>
                     {course.certificate && (
                       <span className="px-2 py-1 bg-green-100 text-green-600 text-xs font-medium rounded-full">
-                        Certificado
+                        {t('member.completed')}
                       </span>
                     )}
                   </div>
@@ -143,8 +144,8 @@ export function MemberArea({ onLogout, memberName }: MemberAreaProps) {
                   </div>
                   {course.certificate && (
                     <button className="mt-3 text-sm text-orange-500 hover:underline flex items-center gap-1">
-                      <Download className="w-4 h-4" />
-                      Baixar Certificado
+                      <FiDownload className="w-4 h-4" />
+                      {t('member.downloadCertificate')}
                     </button>
                   )}
                 </div>
@@ -160,8 +161,8 @@ export function MemberArea({ onLogout, memberName }: MemberAreaProps) {
             className="bg-white rounded-2xl shadow-lg p-6 lg:col-span-2"
           >
             <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-orange-500" />
-              Materiais da Escolinha Dominical
+              <FiBookOpen className="w-5 h-5 text-orange-500" />
+              {t('member.sundaySchool')} - {t('member.exclusiveMaterials')}
             </h2>
             <div className="grid sm:grid-cols-3 gap-4">
               {materials.map((material, index) => (
@@ -177,10 +178,10 @@ export function MemberArea({ onLogout, memberName }: MemberAreaProps) {
                     {material.type}
                   </div>
                   <p className="font-medium text-gray-900 mb-1">{material.title}</p>
-                  <p className="text-xs text-gray-500">{new Date(material.date).toLocaleDateString('pt-BR')}</p>
+                  <p className="text-xs text-gray-500">{new Date(material.date).toLocaleDateString()}</p>
                   <button className="mt-3 w-full py-2 bg-white text-orange-600 font-medium rounded-lg text-sm hover:bg-orange-50 transition-colors flex items-center justify-center gap-1">
-                    <Download className="w-4 h-4" />
-                    Download
+                    <FiDownload className="w-4 h-4" />
+                    {t('member.download')}
                   </button>
                 </motion.div>
               ))}

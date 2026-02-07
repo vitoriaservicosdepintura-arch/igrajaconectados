@@ -1,13 +1,28 @@
 import { motion } from 'framer-motion';
-import { Play, Calendar, Users, Heart } from 'lucide-react';
+import { FiPlay, FiUsers, FiHeart, FiGlobe, FiClock } from 'react-icons/fi';
 import { useLanguage } from '../../contexts/LanguageContext';
 
-interface HeroSectionProps {
-  onNavigate: (section: string) => void;
-}
+export function HeroSection() {
+  const { t, language } = useLanguage();
 
-export function HeroSection({ onNavigate }: HeroSectionProps) {
-  const { t } = useLanguage();
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      const headerOffset = 80;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+      window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+    }
+  };
+
+  const stats = [
+    { icon: FiUsers, label: t('hero.members'), value: '500+' },
+    { icon: FiHeart, label: t('hero.cells'), value: '25+' },
+    { icon: FiGlobe, label: t('hero.countries'), value: '5' },
+    { icon: FiClock, label: t('hero.yearsMinistry'), value: '14' },
+  ];
+
+  const churchName = language === 'en' ? 'Connected Church' : language === 'es' ? 'Iglesia Conectada' : 'Igreja Conectada';
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black">
@@ -82,7 +97,7 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-6"
             >
               <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-              <span className="text-white/80 text-sm">Ao vivo aos Domingos, 10h</span>
+              <span className="text-white/80 text-sm">{t('media.liveNow')}</span>
             </motion.div>
 
             <motion.h1
@@ -91,9 +106,9 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
               transition={{ delay: 0.3 }}
               className="text-4xl sm:text-5xl lg:text-7xl font-bold text-white mb-6"
             >
-              <span className="block">Igreja</span>
+              <span className="block">{t('hero.welcome')}</span>
               <span className="block bg-gradient-to-r from-orange-400 via-orange-500 to-blue-500 bg-clip-text text-transparent">
-                Conectada
+                {t('hero.churchName')}
               </span>
             </motion.h1>
 
@@ -103,7 +118,7 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
               transition={{ delay: 0.4 }}
               className="text-lg sm:text-xl text-gray-300 mb-8 max-w-xl mx-auto lg:mx-0"
             >
-              {t('heroSubtitle')}
+              {t('hero.subtitle')}
             </motion.p>
 
             <motion.div
@@ -113,22 +128,22 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
               className="flex flex-wrap gap-4 justify-center lg:justify-start"
             >
               <motion.button
-                onClick={() => onNavigate('events')}
+                onClick={() => scrollToSection('media')}
                 className="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 transition-all"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Play className="w-5 h-5" />
-                <span>{t('joinUs')}</span>
+                <FiPlay className="w-5 h-5" />
+                <span>{t('hero.watchLive')}</span>
               </motion.button>
 
               <motion.button
-                onClick={() => onNavigate('about')}
+                onClick={() => scrollToSection('about')}
                 className="flex items-center gap-2 px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold rounded-xl hover:bg-white/20 transition-all"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <span>{t('aboutUs')}</span>
+                <span>{t('hero.knowMore')}</span>
               </motion.button>
             </motion.div>
           </motion.div>
@@ -171,8 +186,8 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
                       </motion.div>
                     </div>
                     
-                    <h3 className="text-2xl font-bold text-gray-800 mb-2">Bem-vindo!</h3>
-                    <p className="text-gray-500 text-center text-sm">Uma família que te acolhe com amor</p>
+                    <h3 className="text-2xl font-bold text-gray-800 mb-2">{churchName}</h3>
+                    <p className="text-gray-500 text-center text-sm">{t('footer.description')}</p>
                   </div>
                 </div>
               </motion.div>
@@ -187,12 +202,7 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
           transition={{ delay: 0.7 }}
           className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6"
         >
-          {[
-            { icon: Users, label: 'Membros', value: '500+' },
-            { icon: Calendar, label: 'Eventos/Ano', value: '120+' },
-            { icon: Heart, label: 'Células', value: '25+' },
-            { icon: Play, label: 'Lives', value: '200+' },
-          ].map((stat, i) => (
+          {stats.map((stat, i) => (
             <motion.div
               key={stat.label}
               initial={{ opacity: 0, y: 20 }}

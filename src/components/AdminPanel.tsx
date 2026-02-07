@@ -9,7 +9,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useData, Member, Event } from '../contexts/DataContext';
 
 interface AdminPanelProps {
-  onLogout: () => void;
+  onBack: () => void;
 }
 
 type TabType = 'dashboard' | 'members' | 'events' | 'gallery' | 'prayers' | 'lives';
@@ -21,7 +21,7 @@ const stats = [
   { label: 'Novos Visitantes', value: 34, change: '+8', icon: TrendingUp, color: 'purple' },
 ];
 
-export function AdminPanel({ onLogout }: AdminPanelProps) {
+export function AdminPanel({ onBack }: AdminPanelProps) {
   const { t } = useLanguage();
   const { 
     members, addMember, updateMember, deleteMember,
@@ -224,11 +224,11 @@ export function AdminPanel({ onLogout }: AdminPanelProps) {
           </nav>
 
           <button
-            onClick={onLogout}
+            onClick={onBack}
             className="absolute bottom-6 left-6 right-6 flex items-center gap-3 px-4 py-3 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 transition-colors"
           >
             <LogOut className="w-5 h-5" />
-            <span className="font-medium">{t('logout')}</span>
+            <span className="font-medium">{t('menu.logout')}</span>
           </button>
         </motion.aside>
 

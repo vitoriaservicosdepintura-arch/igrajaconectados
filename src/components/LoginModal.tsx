@@ -20,7 +20,7 @@ export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!consent) {
-      setError('Aceite a política de privacidade para continuar');
+      setError(t('acceptPrivacy'));
       return;
     }
     
@@ -28,6 +28,9 @@ export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
     if (username.toLowerCase() === 'admin' && password === '123') {
       onLogin(true);
       onClose();
+      setUsername('');
+      setPassword('');
+      setConsent(false);
       return;
     }
     
@@ -35,10 +38,13 @@ export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
     if (username && password) {
       onLogin(false);
       onClose();
+      setUsername('');
+      setPassword('');
+      setConsent(false);
       return;
     }
     
-    setError('Credenciais inválidas');
+    setError(t('invalidCredentials'));
   };
 
   return (
@@ -87,13 +93,13 @@ export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
               <div className="p-6 md:p-8">
                 <h2 className="text-2xl font-bold text-gray-900 text-center mb-2">{t('login')}</h2>
                 <p className="text-gray-500 text-center mb-6 text-sm">
-                  Acesse sua área de membro
+                  {t('accessMemberArea')}
                 </p>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Usuário ou E-mail
+                      {t('usernameOrEmail')}
                     </label>
                     <div className="relative">
                       <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
