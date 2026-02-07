@@ -3,14 +3,33 @@ import { motion } from 'framer-motion';
 import { Heart, CreditCard, Smartphone, Building2, Check, Download, Target } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 
-const projects = [
-  { id: '1', name: 'Construção do Novo Templo', goal: 100000, raised: 67500, currency: 'EUR' as const },
-  { id: '2', name: 'Missões na África', goal: 25000, raised: 18750, currency: 'EUR' as const },
-  { id: '3', name: 'Escolinha Dominical', goal: 5000, raised: 4200, currency: 'EUR' as const },
-];
-
 export function DonationsSection() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+
+  // Translated projects
+  const projects = [
+    { 
+      id: '1', 
+      name: language === 'en' ? 'New Temple Construction' : language === 'es' ? 'Construcción del Nuevo Templo' : 'Construção do Novo Templo', 
+      goal: 100000, 
+      raised: 67500, 
+      currency: 'EUR' as const 
+    },
+    { 
+      id: '2', 
+      name: language === 'en' ? 'Missions in Africa' : language === 'es' ? 'Misiones en África' : 'Missões na África', 
+      goal: 25000, 
+      raised: 18750, 
+      currency: 'EUR' as const 
+    },
+    { 
+      id: '3', 
+      name: language === 'en' ? 'Sunday School' : language === 'es' ? 'Escuela Dominical' : 'Escolinha Dominical', 
+      goal: 5000, 
+      raised: 4200, 
+      currency: 'EUR' as const 
+    },
+  ];
   const [currency, setCurrency] = useState<'EUR' | 'BRL'>('EUR');
   const [method, setMethod] = useState<'MBWAY' | 'PIX' | 'TRANSFER'>('MBWAY');
   const [amount, setAmount] = useState('');
@@ -45,13 +64,16 @@ export function DonationsSection() {
           className="text-center mb-12"
         >
           <span className="inline-block px-4 py-2 rounded-full bg-orange-100 text-orange-600 text-sm font-medium mb-4">
-            {t('donations')}
+            {t('donations.title')}
           </span>
           <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
-            Contribua com a <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-blue-600">Obra</span>
+            {language === 'en' ? 'Contribute to the ' : language === 'es' ? 'Contribuye con la ' : 'Contribua com a '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-blue-600">
+              {language === 'en' ? 'Work' : language === 'es' ? 'Obra' : 'Obra'}
+            </span>
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Sua generosidade transforma vidas. Cada doação é uma semente plantada no Reino de Deus.
+            {t('donations.subtitle')}
           </p>
         </motion.div>
 
@@ -64,7 +86,7 @@ export function DonationsSection() {
         >
           <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
             <Target className="w-5 h-5 text-orange-500" />
-            {t('donationGoal')}s Atuais
+            {t('donations.projectGoals')} {language === 'en' ? 'Current' : language === 'es' ? 'Actuales' : 'Atuais'}
           </h3>
           <div className="grid md:grid-cols-3 gap-6">
             {projects.map((project, index) => {
@@ -107,7 +129,7 @@ export function DonationsSection() {
                   
                   <div className="flex justify-between text-sm">
                     <span className={selectedProject === project.id ? 'text-white/80' : 'text-gray-500'}>
-                      {t('raised')}: {formatCurrency(project.raised, project.currency)}
+                      {t('donations.raised')}: {formatCurrency(project.raised, project.currency)}
                     </span>
                     <span className={`font-bold ${selectedProject === project.id ? 'text-white' : 'text-gray-900'}`}>
                       {percentage.toFixed(0)}%
@@ -133,7 +155,7 @@ export function DonationsSection() {
             <form onSubmit={handleDonate}>
               {/* Currency Selector */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-3">Moeda</label>
+                <label className="block text-sm font-medium text-gray-700 mb-3">{t('donations.currency')}</label>
                 <div className="grid grid-cols-2 gap-3">
                   {(['EUR', 'BRL'] as const).map((curr) => (
                     <button
@@ -155,7 +177,9 @@ export function DonationsSection() {
 
               {/* Amount */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-3">Valor</label>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  {language === 'en' ? 'Amount' : language === 'es' ? 'Monto' : 'Valor'}
+                </label>
                 <div className="grid grid-cols-4 gap-2 mb-3">
                   {presetAmounts.map((preset) => (
                     <button
@@ -176,19 +200,19 @@ export function DonationsSection() {
                   type="number"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  placeholder="Outro valor"
+                  placeholder={t('donations.custom')}
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 />
               </div>
 
               {/* Payment Method */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-3">Método de Pagamento</label>
+                <label className="block text-sm font-medium text-gray-700 mb-3">{t('donations.method')}</label>
                 <div className="grid grid-cols-3 gap-3">
                   {[
-                    { id: 'MBWAY' as const, label: 'MBWAY', icon: Smartphone },
-                    { id: 'PIX' as const, label: 'PIX', icon: CreditCard },
-                    { id: 'TRANSFER' as const, label: 'Transferência', icon: Building2 },
+                    { id: 'MBWAY' as const, label: t('donations.mbway'), icon: Smartphone },
+                    { id: 'PIX' as const, label: t('donations.pix'), icon: CreditCard },
+                    { id: 'TRANSFER' as const, label: t('donations.transfer'), icon: Building2 },
                   ].map((m) => (
                     <button
                       key={m.id}
@@ -216,7 +240,7 @@ export function DonationsSection() {
                   className="mt-1 w-4 h-4 text-orange-500 rounded"
                 />
                 <span className="text-sm text-gray-600">
-                  {t('privacyConsent')}. Seus dados financeiros são protegidos.
+                  {t('prayer.consent')}
                 </span>
               </label>
 
@@ -228,7 +252,7 @@ export function DonationsSection() {
                 whileTap={{ scale: 0.98 }}
               >
                 <Heart className="w-5 h-5" />
-                {t('donateNow')}
+                {t('donations.donateNow')}
               </motion.button>
             </form>
           </motion.div>
@@ -254,19 +278,19 @@ export function DonationsSection() {
                 >
                   <Check className="w-10 h-10 text-white" />
                 </motion.div>
-                <h3 className="text-2xl font-bold text-green-800 mb-2">Obrigado!</h3>
+                <h3 className="text-2xl font-bold text-green-800 mb-2">{t('donations.thankYou')}</h3>
                 <p className="text-green-600 mb-4">
-                  Sua doação foi registrada com sucesso. Que Deus abençoe sua generosidade!
+                  {t('donations.receiptSent')}
                 </p>
                 <button className="inline-flex items-center gap-2 px-6 py-3 bg-green-500 text-white rounded-xl font-medium hover:bg-green-600 transition-colors">
                   <Download className="w-4 h-4" />
-                  Baixar Recibo
+                  {t('member.downloadReceipt')}
                 </button>
               </motion.div>
             ) : (
               <>
                 <div className="bg-white rounded-3xl shadow-lg p-6">
-                  <h3 className="font-bold text-gray-900 mb-4">Dados Bancários</h3>
+                  <h3 className="font-bold text-gray-900 mb-4">{t('donations.bankDetails')}</h3>
                   <div className="space-y-3 text-sm">
                     <div className="flex justify-between p-3 bg-gray-50 rounded-lg">
                       <span className="text-gray-500">IBAN:</span>
@@ -277,14 +301,14 @@ export function DonationsSection() {
                       <span className="font-mono font-medium">CGDIPTPL</span>
                     </div>
                     <div className="flex justify-between p-3 bg-gray-50 rounded-lg">
-                      <span className="text-gray-500">Beneficiário:</span>
-                      <span className="font-medium">Igreja Conectada</span>
+                      <span className="text-gray-500">{language === 'en' ? 'Beneficiary' : language === 'es' ? 'Beneficiario' : 'Beneficiário'}:</span>
+                      <span className="font-medium">{language === 'en' ? 'Connected Church' : language === 'es' ? 'Iglesia Conectada' : 'Igreja Conectada'}</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="bg-gradient-to-br from-orange-500 to-blue-600 rounded-3xl p-6 text-white">
-                  <h3 className="font-bold mb-3">PIX Brasil</h3>
+                  <h3 className="font-bold mb-3">{t('donations.pix')} Brasil</h3>
                   <div className="bg-white/20 backdrop-blur rounded-xl p-4 text-center">
                     <div className="w-32 h-32 mx-auto mb-3 bg-white rounded-xl flex items-center justify-center">
                       <div className="grid grid-cols-4 gap-1">

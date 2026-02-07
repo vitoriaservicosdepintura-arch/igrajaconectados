@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Play, Headphones, Clock, Eye, Calendar, ExternalLink } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Play, Headphones, Clock, Eye, Calendar, ExternalLink, MessageCircle, Send, User, X } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useData } from '../../contexts/DataContext';
 
@@ -19,13 +19,56 @@ const podcasts = [
 ];
 
 export function MediaSection() {
-  const { t } = useLanguage();
-  const { youtubeChannelUrl, liveStream } = useData();
+  const { t, language } = useLanguage();
+  const { youtubeChannelUrl, liveStream, addComment, getCommentsByTarget } = useData();
   const [activeTab, setActiveTab] = useState<'videos' | 'podcasts'>('videos');
+  const [showCommentModal, setShowCommentModal] = useState(false);
+  const [commentTargetId, setCommentTargetId] = useState<string | null>(null);
+  const [commentTargetType, setCommentTargetType] = useState<'video' | 'podcast'>('video');
+  const [userName, setUserName] = useState('');
+  const [commentText, setCommentText] = useState('');
+  const [consent, setConsent] = useState(false);
 
   const openYouTube = () => {
     window.open(youtubeChannelUrl, '_blank');
   };
+
+  const handleOpenComment = (id: string, type: 'video' | 'podcast') => {
+    setCommentTargetId(id);
+    setCommentTargetType(type);
+    setShowCommentModal(true);
+  };
+
+  const handleSubmitComment = () => {
+    if (!userName.trim() || !commentText.trim() || !consent || !commentTargetId) return;
+    
+    addComment({
+      memberId: 'public-' + Date.now(),
+      memberName: userName,
+      text: commentText,
+      targetType: 'media',
+      targetId: commentTargetId,
+    });
+    
+    setUserName('');
+    setCommentText('');
+    setConsent(false);
+    setShowCommentModal(false);
+    setCommentTargetId(null);
+  };
+
+  const getCommentsForMedia = (mediaId: string) => {
+    return getCommentsByTarget('media', mediaId);
+  };
+
+  // Translation helpers
+  const placeholderName = language === 'en' ? 'Your name' : language === 'es' ? 'Tu nombre' : 'Seu nome';
+  const placeholderComment = language === 'en' ? 'Write a comment...' : language === 'es' ? 'Escribe un comentario...' : 'Escreva um comentário...';
+  const consentText = language === 'en' ? 'I agree with data processing (GDPR)' : language === 'es' ? 'Acepto el tratamiento de datos (RGPD)' : 'Concordo com o tratamento de dados (LGPD)';
+  const sendText = language === 'en' ? 'Send' : language === 'es' ? 'Enviar' : 'Enviar';
+  const commentsText = language === 'en' ? 'Comments' : language === 'es' ? 'Comentarios' : 'Comentários';
+  const addCommentText = language === 'en' ? 'Add Comment' : language === 'es' ? 'Agregar Comentario' : 'Adicionar Comentário';
+  const noCommentsText = language === 'en' ? 'No comments yet. Be the first!' : language === 'es' ? '¡Aún no hay comentarios. Sé el primero!' : 'Nenhum comentário ainda. Seja o primeiro!';
 
   return (
     <section className="py-20 bg-gray-900" id="media">
@@ -108,15 +151,26 @@ export function MediaSection() {
                   {video.title}
                 </h3>
                 <p className="text-sm text-gray-400 mb-2">{video.speaker}</p>
-                <div className="flex items-center gap-4 text-xs text-gray-500">
-                  <span className="flex items-center gap-1">
-                    <Eye className="w-3 h-3" />
-                    {video.views.toLocaleString()}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-3 h-3" />
-                    {new Date(video.date).toLocaleDateString('pt-BR')}
-                  </span>
+                <div className="flex items-center justify-between text-xs text-gray-500">
+                  <div className="flex items-center gap-4">
+                    <span className="flex items-center gap-1">
+                      <Eye className="w-3 h-3" />
+                      {video.views.toLocaleString()}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      {new Date(video.date).toLocaleDateString('pt-BR')}
+                    </span>
+                  </div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleOpenComment(video.id, 'video'); }}
+                    className="flex items-center gap-1 text-gray-400 hover:text-orange-400 transition-colors"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    {getCommentsForMedia(video.id).length > 0 && (
+                      <span>{getCommentsForMedia(video.id).length}</span>
+                    )}
+                  </button>
                 </div>
               </motion.div>
             ))}
@@ -152,9 +206,18 @@ export function MediaSection() {
                   </div>
                 </div>
 
-                {/* Plays */}
-                <div className="text-right">
+                {/* Plays & Comments */}
+                <div className="flex items-center gap-4">
                   <span className="text-sm text-gray-400">{podcast.plays} plays</span>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleOpenComment(podcast.id, 'podcast'); }}
+                    className="flex items-center gap-1 text-gray-400 hover:text-orange-400 transition-colors"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    {getCommentsForMedia(podcast.id).length > 0 && (
+                      <span className="text-sm">{getCommentsForMedia(podcast.id).length}</span>
+                    )}
+                  </button>
                 </div>
               </motion.div>
             ))}
@@ -222,6 +285,103 @@ export function MediaSection() {
             </div>
           </div>
         </motion.div>
+
+        {/* Comment Modal */}
+        <AnimatePresence>
+          {showCommentModal && commentTargetId && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] bg-black/70 flex items-center justify-center p-4"
+              onClick={() => { setShowCommentModal(false); setCommentTargetId(null); }}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="bg-white rounded-2xl p-6 w-full max-w-md max-h-[80vh] overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <MessageCircle className="w-5 h-5 text-orange-500" />
+                    {commentsText} - {commentTargetType === 'video' ? 'Vídeo' : 'Podcast'}
+                  </h3>
+                  <button 
+                    onClick={() => { setShowCommentModal(false); setCommentTargetId(null); }} 
+                    className="p-2 hover:bg-gray-100 rounded-full"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Existing Comments */}
+                <div className="space-y-3 mb-6 max-h-48 overflow-y-auto">
+                  {getCommentsForMedia(commentTargetId).length === 0 ? (
+                    <p className="text-gray-400 text-sm text-center py-4">{noCommentsText}</p>
+                  ) : (
+                    getCommentsForMedia(commentTargetId).map((comment) => (
+                      <div key={comment.id} className="bg-gray-50 rounded-xl p-3">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                            {comment.memberName.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900 text-sm">{comment.memberName}</p>
+                            <p className="text-xs text-gray-400">
+                              {new Date(comment.createdAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                        <p className="text-gray-600 text-sm ml-10">{comment.text}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Add Comment Form */}
+                <div className="border-t border-gray-100 pt-4">
+                  <h4 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    {addCommentText}
+                  </h4>
+                  <input
+                    type="text"
+                    value={userName}
+                    onChange={(e) => setUserName(e.target.value)}
+                    placeholder={placeholderName}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent mb-3"
+                  />
+                  <textarea
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    placeholder={placeholderComment}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none mb-3"
+                    rows={3}
+                  />
+                  <label className="flex items-start gap-2 cursor-pointer mb-4">
+                    <input
+                      type="checkbox"
+                      checked={consent}
+                      onChange={(e) => setConsent(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 text-orange-500 rounded"
+                    />
+                    <span className="text-xs text-gray-500">{consentText}</span>
+                  </label>
+                  <button
+                    onClick={handleSubmitComment}
+                    disabled={!userName.trim() || !commentText.trim() || !consent}
+                    className="w-full py-3 bg-gradient-to-r from-orange-500 to-blue-600 text-white font-medium rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Send className="w-4 h-4" />
+                    {sendText}
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </section>
   );

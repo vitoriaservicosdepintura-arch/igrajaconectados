@@ -27,6 +27,7 @@ const Header: React.FC<HeaderProps> = ({
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [activeMenu, setActiveMenu] = useState<string>('home');
   const langMenuRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const moreMenuRef = useRef<HTMLDivElement>(null);
@@ -34,6 +35,23 @@ const Header: React.FC<HeaderProps> = ({
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
+      
+      // Detectar seção ativa baseado no scroll
+      const sections = ['home', 'about', 'events', 'gallery', 'prayer', 'donations', 'quiz', 'cells', 'media', 'contact'];
+      const scrollPosition = window.scrollY + 150;
+      
+      for (const sectionId of sections) {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          const offsetTop = element.offsetTop;
+          const offsetHeight = element.offsetHeight;
+          
+          if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+            setActiveMenu(sectionId);
+            break;
+          }
+        }
+      }
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -56,6 +74,7 @@ const Header: React.FC<HeaderProps> = ({
   }, []);
 
   const scrollToSection = (sectionId: string) => {
+    setActiveMenu(sectionId);
     const element = document.getElementById(sectionId);
     if (element) {
       const headerOffset = 80;
@@ -128,9 +147,11 @@ const Header: React.FC<HeaderProps> = ({
                 key={item.id}
                 onClick={() => scrollToSection(item.id)}
                 className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                  isScrolled 
-                    ? 'text-gray-700 hover:text-orange-600 hover:bg-orange-50' 
-                    : 'text-white/90 hover:text-white hover:bg-white/10'
+                  activeMenu === item.id
+                    ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md transform scale-105'
+                    : isScrolled 
+                      ? 'text-gray-700 hover:text-orange-600 hover:bg-orange-50' 
+                      : 'text-white/90 hover:text-white hover:bg-white/10'
                 }`}
               >
                 {item.label}
@@ -142,9 +163,11 @@ const Header: React.FC<HeaderProps> = ({
               <button
                 onClick={() => setIsMoreMenuOpen(!isMoreMenuOpen)}
                 className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center ${
-                  isScrolled 
-                    ? 'text-gray-700 hover:text-orange-600 hover:bg-orange-50' 
-                    : 'text-white/90 hover:text-white hover:bg-white/10'
+                  moreMenuItems.some(item => item.id === activeMenu)
+                    ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md transform scale-105'
+                    : isScrolled 
+                      ? 'text-gray-700 hover:text-orange-600 hover:bg-orange-50' 
+                      : 'text-white/90 hover:text-white hover:bg-white/10'
                 }`}
               >
                 {t('menu.more')}
@@ -163,7 +186,11 @@ const Header: React.FC<HeaderProps> = ({
                       <button
                         key={item.id}
                         onClick={() => scrollToSection(item.id)}
-                        className="w-full px-4 py-3 text-left text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
+                        className={`w-full px-4 py-3 text-left transition-colors ${
+                          activeMenu === item.id
+                            ? 'bg-orange-500 text-white font-semibold'
+                            : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'
+                        }`}
                       >
                         {item.label}
                       </button>
@@ -334,7 +361,11 @@ const Header: React.FC<HeaderProps> = ({
                 <button
                   key={item.id}
                   onClick={() => scrollToSection(item.id)}
-                  className="w-full px-4 py-3 text-left text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors font-medium"
+                  className={`w-full px-4 py-3 text-left rounded-lg transition-all font-medium ${
+                    activeMenu === item.id
+                      ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md'
+                      : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'
+                  }`}
                 >
                   {item.label}
                 </button>
