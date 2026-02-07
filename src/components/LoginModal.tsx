@@ -20,7 +20,7 @@ export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!consent) {
-      setError(t('acceptPrivacy'));
+      setError(t('prayer.consent'));
       return;
     }
     
@@ -44,7 +44,7 @@ export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
       return;
     }
     
-    setError(t('invalidCredentials'));
+    setError(t('login.error'));
   };
 
   return (
@@ -91,15 +91,15 @@ export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
 
               {/* Form */}
               <div className="p-6 md:p-8">
-                <h2 className="text-2xl font-bold text-gray-900 text-center mb-2">{t('login')}</h2>
+                <h2 className="text-2xl font-bold text-gray-900 text-center mb-2">{t('login.title')}</h2>
                 <p className="text-gray-500 text-center mb-6 text-sm">
-                  {t('accessMemberArea')}
+                  {t('login.subtitle')}
                 </p>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {t('usernameOrEmail')}
+                      {t('login.username')}
                     </label>
                     <div className="relative">
                       <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -108,7 +108,7 @@ export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
                         value={username}
                         onChange={(e) => { setUsername(e.target.value); setError(''); }}
                         className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                        placeholder="seu@email.com"
+                        placeholder={t('login.usernamePlaceholder')}
                         required
                       />
                     </div>
@@ -116,7 +116,7 @@ export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {t('password')}
+                      {t('login.password')}
                     </label>
                     <div className="relative">
                       <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -125,7 +125,7 @@ export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
                         value={password}
                         onChange={(e) => { setPassword(e.target.value); setError(''); }}
                         className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                        placeholder="••••••••"
+                        placeholder={t('login.passwordPlaceholder')}
                         required
                       />
                       <button
@@ -156,7 +156,7 @@ export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
                       className="mt-1 w-4 h-4 text-orange-500 rounded"
                     />
                     <span className="text-sm text-gray-600">
-                      {t('privacyConsent')}
+                      {t('prayer.consent')}
                     </span>
                   </label>
 
@@ -166,12 +166,18 @@ export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    {t('login')}
+                    {t('login.enter')}
                   </motion.button>
                 </form>
 
-                <p className="text-center text-sm text-gray-500 mt-6">
-                  Admin: <code className="bg-gray-100 px-2 py-1 rounded">admin / 123</code>
+                <div className="text-center mt-4">
+                  <button className="text-sm text-orange-500 hover:text-orange-600">
+                    {t('login.forgotPassword')}
+                  </button>
+                </div>
+
+                <p className="text-center text-sm text-gray-500 mt-4">
+                  {t('login.adminHint')}
                 </p>
               </div>
             </div>
